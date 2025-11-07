@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>cn.addenda</groupId>
+    <artifactId>exact-sql-log-ext</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>exact-sql-log-ext-log</artifactId>
+
+  <properties>
+    <maven.compiler.source>8</maven.compiler.source>
+    <maven.compiler.target>8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <!-- esl-facade -->
+    <dependency>
+      <groupId>cn.addenda</groupId>
+      <artifactId>exact-sql-log-ext-facade</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <!-- Slf4j -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <!-- Log4j2 适配到slf4j -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <!-- Log4j2 核心组件 -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <!-- Log4j2 核心API -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>${maven-source-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <id>copy-log-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.basedir}/../../dist/ext/log</outputDirectory>
+              <includeArtifactIds>
+                slf4j-api,log4j-slf4j-impl,log4j-core,log4j-api
+              </includeArtifactIds>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <!--在clean阶段删除dist目录-->
+          <execution>
+            <id>clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <echo message="Base dir: ${project.basedir}"/>
+                <delete dir="${project.basedir}/../../dist/ext/log"/>
+              </target>
+            </configuration>
+          </execution>
+          <!--在package阶段创建dist及相关目录-->
+          <execution>
+            <id>package</id>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <echo message="project.basedir: ${project.basedir}"/>
+                <echo message="project.build.directory: ${project.build.directory}"/>
+                <echo message="project.build.finalName: ${project.build.finalName}"/>
+                <mkdir dir="${project.basedir}/../../dist"/>
+                <!-- 创建外部目录 -->
+                <mkdir dir="${project.basedir}/../../dist/ext"/>
+                <!-- 创建log外部目录 -->
+                <mkdir dir="${project.basedir}/../../dist/ext/log"/>
+                <!-- 拷贝jar至外部目录 -->
+                <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                      tofile="${project.basedir}/../../dist/ext/log/${project.build.finalName}.jar"/>
+                <!-- 拷贝log配置文件至目标目录 -->
+                <copy file="${project.basedir}/src/main/resources/log4j2.xml"
+                      tofile="${project.basedir}/../../dist/ext/log/log4j2.xml"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

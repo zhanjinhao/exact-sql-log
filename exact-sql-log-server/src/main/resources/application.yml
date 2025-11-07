@@ -1,0 +1,14 @@
+server:
+  port: 24792
+  servlet:
+    context-path: /esl
+
+spring:
+  application:
+    name: esl-server
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: true
+    deserialization:
+      fail-on-unknown-properties: false

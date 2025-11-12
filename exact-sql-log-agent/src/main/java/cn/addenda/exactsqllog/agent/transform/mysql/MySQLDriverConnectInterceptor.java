@@ -1,6 +1,7 @@
-package cn.addenda.exactsqllog.agent.transform;
+package cn.addenda.exactsqllog.agent.transform.mysql;
 
 import cn.addenda.exactsqllog.agent.system.AgentDefaultSystemLoggerFactory;
+import cn.addenda.exactsqllog.agent.transform.Interceptor;
 import cn.addenda.exactsqllog.agent.writer.AgentChainSqlWriter;
 import cn.addenda.exactsqllog.agent.writer.AgentHttpSqlWriter;
 import cn.addenda.exactsqllog.agent.writer.AgentLogSqlWriter;
@@ -13,13 +14,13 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.util.concurrent.Callable;
 
-public class DriverConnectInterceptor {
+public class MySQLDriverConnectInterceptor implements Interceptor {
 
   private final SqlWriter sqlWriter;
 
   private final SystemLogger elsConnectionSystemLogger;
 
-  public DriverConnectInterceptor() {
+  public MySQLDriverConnectInterceptor() {
     AgentLogSqlWriter agentLogSqlWriter = new AgentLogSqlWriter();
     AgentHttpSqlWriter agentHttpSqlWriter = new AgentHttpSqlWriter();
     this.sqlWriter = new AgentChainSqlWriter(agentLogSqlWriter, agentHttpSqlWriter);
@@ -30,7 +31,7 @@ public class DriverConnectInterceptor {
    * 被@RuntimeType标注的方法就是被委托的方法
    */
   @RuntimeType
-  public Connection selectUserName(
+  public Connection intercept(
           // byteBuddy会在运行期间给被注定注解修饰的方法参数进行赋值:
 
           // 当前被拦截的、动态生成的那个对象
@@ -46,14 +47,14 @@ public class DriverConnectInterceptor {
           @SuperCall Callable<?> zuper
   ) throws Exception {
 
-    System.out.println("DriverConnectInterceptor.class.classLoader = " + DriverConnectInterceptor.class.getClassLoader());
+    System.out.println("MySQLDriverConnectInterceptor.class.classLoader = " + this.getClass().getClassLoader());
 
     Object call = zuper.call();
 
     EslConnection eslConnection = new EslConnection(
             (Connection) call, elsConnectionSystemLogger, sqlWriter);
 
-    System.out.println("EslConnection.class.classLoader = " + EslConnection.class.getClassLoader());
+    System.out.println("EslConnection.class.classLoader = " + eslConnection.getClass().getClassLoader());
 
     return eslConnection;
   }

@@ -34,7 +34,7 @@ public class DbUtils {
     hikariDataSource.setJdbcUrl("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1");
     hikariDataSource.setUsername("root");
     hikariDataSource.setPassword("root");
-    hikariDataSource.setMaximumPoolSize(3);
+    hikariDataSource.setMaximumPoolSize(1);
     hikariDataSource.setAutoCommit(false);
 
     return hikariDataSource;
@@ -46,7 +46,7 @@ public class DbUtils {
     hikariDataSource.setJdbcUrl(properties.getProperty("url"));
     hikariDataSource.setUsername(properties.getProperty("username"));
     hikariDataSource.setPassword(properties.getProperty("password"));
-    hikariDataSource.setMaximumPoolSize(3);
+    hikariDataSource.setMaximumPoolSize(1);
     hikariDataSource.setAutoCommit(false);
 
     return hikariDataSource;

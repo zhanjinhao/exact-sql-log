@@ -2,12 +2,14 @@ package cn.addenda.exactsqllog.agent;
 
 import cn.addenda.exactsqllog.agent.system.AgentDefaultSystemLoggerFactory;
 import cn.addenda.exactsqllog.agent.transform.AgentTransformer;
+import cn.addenda.exactsqllog.agent.transform.InterceptorPointDefineGather;
+import cn.addenda.exactsqllog.agent.transform.druid.DruidDruidDataSourceInterceptorPointDefine;
+import cn.addenda.exactsqllog.agent.transform.hikari.HikariConcurrentBagInterceptorPointDefine;
+import cn.addenda.exactsqllog.agent.transform.mysql.MySQLDriverInterceptorPointDefine;
 import cn.addenda.exactsqllog.proxy.system.SystemLogger;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
-import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatchers;
 
 import java.lang.instrument.Instrumentation;
@@ -16,7 +18,14 @@ import static net.bytebuddy.matcher.ElementMatchers.nameContains;
 import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 
 /**
- * todo: 遗留问题，1、注册JVM回调钩子，清理资源。2、writer缓存，异步输出。3、拦截连接池的close方法，清理esl。
+ * todo: 遗留问题，
+ * 1、注册JVM回调钩子，清理资源。
+ * 2、writer缓存，异步输出。
+ * 3、拦截接口的进入点，事务的进入点
+ * <p>
+ * com.alibaba.druid.pool.DruidConnectionHolder#reset()
+ * <p>
+ * com.zaxxer.hikari.pool.PoolEntry#(long)
  */
 public class ExactSqlLogAgent {
 
@@ -26,6 +35,8 @@ public class ExactSqlLogAgent {
 
     log.info("ExactSqlLogAgent start enhancement, {}.class.classLoader = {}, args:{}",
             ExactSqlLogAgent.class.getName(), ExactSqlLogAgent.class.getClassLoader(), args);
+
+    InterceptorPointDefineGather interceptorPointDefineGather = getInterceptorGather();
 
     ByteBuddy byteBuddy = new ByteBuddy().with(TypeValidation.of(true));
 
@@ -41,17 +52,19 @@ public class ExactSqlLogAgent {
                             .or(nameStartsWith("sun.reflect"))
                             .or(ElementMatchers.isSynthetic()))
             // 当要被拦截的type第一次要被加载的时候会进入这里
-            .type(new ElementMatcher<TypeDescription>() {
-              @Override
-              public boolean matches(TypeDescription target) {
-                String typeName = target.getTypeName();
-                return "com.mysql.cj.jdbc.NonRegisteringDriver".equals(typeName);
-              }
-            })
-            .transform(new AgentTransformer())
+            .type(interceptorPointDefineGather.buildMatch())
+            .transform(new AgentTransformer(interceptorPointDefineGather))
             .with(new AgentListener());
 
     with.installOn(instrumentation);
+  }
+
+  private static InterceptorPointDefineGather getInterceptorGather() {
+    InterceptorPointDefineGather interceptorPointDefineGather = new InterceptorPointDefineGather();
+    interceptorPointDefineGather.addInterceptorPointDefine(new MySQLDriverInterceptorPointDefine());
+    interceptorPointDefineGather.addInterceptorPointDefine(new HikariConcurrentBagInterceptorPointDefine());
+    interceptorPointDefineGather.addInterceptorPointDefine(new DruidDruidDataSourceInterceptorPointDefine());
+    return interceptorPointDefineGather;
   }
 
 }

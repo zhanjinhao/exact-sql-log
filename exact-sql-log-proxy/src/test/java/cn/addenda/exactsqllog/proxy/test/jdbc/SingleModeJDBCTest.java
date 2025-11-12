@@ -21,8 +21,10 @@ public class SingleModeJDBCTest {
 
   @Test
   void test_statement_execute_update_autoCommit_false_commit() throws Exception {
-    Connection connection = dataSource.getConnection();
-    test_statement_execute_update_autoCommit_false_commit(connection);
+    Connection connection1 = dataSource.getConnection();
+    test_statement_execute_update_autoCommit_false_commit(connection1);
+    Connection connection2 = dataSource.getConnection();
+    test_statement_execute_update_autoCommit_false_commit(connection2);
   }
 
   protected void test_statement_execute_update_autoCommit_false_commit(Connection connection) throws Exception {
@@ -34,9 +36,16 @@ public class SingleModeJDBCTest {
     statement.executeUpdate("insert into t_jdbc_test set name = 'SingleModeJDBCTest-test_statement_execute_update_autoCommit_false_commit-2'");
 
     connection.commit();
-
     statement.close();
+
+    PreparedStatement preparedStatement = connection.prepareStatement("insert into t_jdbc_test set name = ?");
+    preparedStatement.setString(1, "SingleModeJDBCTest-test_statement_execute_update_autoCommit_false_commit-3");
+    preparedStatement.addBatch();
+
     connection.close();
+
+
+
   }
 
   @Test

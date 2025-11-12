@@ -85,7 +85,6 @@ public class EslConnection extends AbstractEslConnection implements Connection, 
   public void close() throws SQLException {
     connection.close();
     closeEsl();
-    // todo 连接池里的connection不会真正被close，所以需要查看各个连接池的代码，保证释放connection的时候能回调closeEsl()
   }
 
   @Override

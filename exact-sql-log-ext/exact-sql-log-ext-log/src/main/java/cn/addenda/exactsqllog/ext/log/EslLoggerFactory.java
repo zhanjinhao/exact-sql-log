@@ -14,7 +14,6 @@ public class EslLoggerFactory {
   private File confFile;
 
   public EslLoggerFactory(Properties agentProperties, File confFile) {
-    System.out.println(EslLoggerFactory.class + "的classLoader = " + EslLoggerFactory.class.getClassLoader());
     this.agentProperties = agentProperties;
     this.confFile = confFile;
     LoggerContext context = LogManager.getContext(null, false, confFile.toURI());

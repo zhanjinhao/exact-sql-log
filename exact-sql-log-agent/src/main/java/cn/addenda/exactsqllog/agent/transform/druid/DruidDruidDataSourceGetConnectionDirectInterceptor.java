@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.util.concurrent.Callable;
 
-public class DruidDruidDataSourceGetConnectionDirectInterceptor implements Interceptor{
+public class DruidDruidDataSourceGetConnectionDirectInterceptor implements Interceptor {
 
   private Field _connField;
 
@@ -37,7 +37,7 @@ public class DruidDruidDataSourceGetConnectionDirectInterceptor implements Inter
           @SuperCall Callable<?> zuper
   ) throws Exception {
 
-    System.out.println("DruidDruidDataSourceGetConnectionDirectInterceptor.class.classLoader = " + this.getClass().getClassLoader());
+    systemLogger.info("DruidDruidDataSourceGetConnectionDirectInterceptor.class.classLoader = {}", this.getClass().getClassLoader());
 
     Object call = zuper.call();
 

@@ -36,7 +36,7 @@ public class HikariConcurrentBagBorrowInterceptor implements Interceptor {
           // 用于调用父类的方法。
           @SuperCall Callable<?> zuper
   ) throws Exception {
-    System.out.println("HikariPoolEntryRecycleInterceptor.class.classLoader = " + this.getClass().getClassLoader());
+    systemLogger.info("HikariPoolEntryRecycleInterceptor.class.classLoader = {}.", this.getClass().getClassLoader());
 
     Object call = zuper.call();
     if (call == null) {

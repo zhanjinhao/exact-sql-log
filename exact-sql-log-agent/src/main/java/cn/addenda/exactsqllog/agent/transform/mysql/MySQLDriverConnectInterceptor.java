@@ -2,6 +2,7 @@ package cn.addenda.exactsqllog.agent.transform.mysql;
 
 import cn.addenda.exactsqllog.agent.system.AgentDefaultSystemLoggerFactory;
 import cn.addenda.exactsqllog.agent.transform.Interceptor;
+import cn.addenda.exactsqllog.agent.transform.hikari.HikariConcurrentBagBorrowInterceptor;
 import cn.addenda.exactsqllog.agent.writer.AgentChainSqlWriter;
 import cn.addenda.exactsqllog.agent.writer.AgentHttpSqlWriter;
 import cn.addenda.exactsqllog.agent.writer.AgentLogSqlWriter;
@@ -19,6 +20,9 @@ public class MySQLDriverConnectInterceptor implements Interceptor {
   private final SqlWriter sqlWriter;
 
   private final SystemLogger elsConnectionSystemLogger;
+
+  private static final SystemLogger systemLogger =
+          AgentDefaultSystemLoggerFactory.getInstance().getSystemLogger(HikariConcurrentBagBorrowInterceptor.class);
 
   public MySQLDriverConnectInterceptor() {
     AgentLogSqlWriter agentLogSqlWriter = new AgentLogSqlWriter();
@@ -47,14 +51,14 @@ public class MySQLDriverConnectInterceptor implements Interceptor {
           @SuperCall Callable<?> zuper
   ) throws Exception {
 
-    System.out.println("MySQLDriverConnectInterceptor.class.classLoader = " + this.getClass().getClassLoader());
+    systemLogger.info("MySQLDriverConnectInterceptor.class.classLoader = {}", this.getClass().getClassLoader());
 
     Object call = zuper.call();
 
     EslConnection eslConnection = new EslConnection(
             (Connection) call, elsConnectionSystemLogger, sqlWriter);
 
-    System.out.println("EslConnection.class.classLoader = " + eslConnection.getClass().getClassLoader());
+    systemLogger.info("EslConnection.class.classLoader = {}", eslConnection.getClass().getClassLoader());
 
     return eslConnection;
   }

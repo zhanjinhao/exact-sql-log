@@ -19,9 +19,8 @@ import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 
 /**
  * todo: 遗留问题，
- * 1、注册JVM回调钩子，清理资源。
- * 2、writer缓存，异步输出。
- * 3、拦截接口的进入点，事务的进入点
+ * 1、RuntimeException 改为自定义异常
+ * 2、拦截接口的进入点，事务的进入点，orm的进入点
  * <p>
  * com.alibaba.druid.pool.DruidConnectionHolder#reset()
  * <p>

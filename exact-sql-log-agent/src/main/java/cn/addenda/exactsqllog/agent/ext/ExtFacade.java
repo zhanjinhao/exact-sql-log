@@ -2,6 +2,8 @@ package cn.addenda.exactsqllog.agent.ext;
 
 import cn.addenda.exactsqllog.agent.AgentPackagePath;
 import cn.addenda.exactsqllog.common.bo.Execution;
+import cn.addenda.exactsqllog.common.jvm.JVMShutdown;
+import cn.addenda.exactsqllog.common.jvm.JVMShutdownCallback;
 import cn.addenda.exactsqllog.common.util.FileUtils;
 import cn.addenda.exactsqllog.ext.facade.HttpFacade;
 import cn.addenda.exactsqllog.ext.facade.JsonFacade;
@@ -41,6 +43,9 @@ public class ExtFacade {
         Class<?> eslDefaultHttpImplClass = Class.forName("cn.addenda.exactsqllog.ext.http.EslDefaultHttpImpl", true, extClassLoader);
         httpFacade = (HttpFacade) eslDefaultHttpImplClass.getConstructor(Properties.class, Properties.class)
                 .newInstance(AgentPackagePath.getAgentProperties(), httpConfigProperties);
+        if (httpFacade instanceof JVMShutdownCallback) {
+          JVMShutdown.getInstance().addJvmShutdownCallback((JVMShutdownCallback) httpFacade);
+        }
       } catch (InstantiationException | IllegalAccessException |
                InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
         throw new RuntimeException(e);
@@ -65,7 +70,9 @@ public class ExtFacade {
         Class<?> eslDefaultJsonImplClass = Class.forName("cn.addenda.exactsqllog.ext.json.EslDefaultJsonImpl", true, extClassLoader);
         jsonFacade = (JsonFacade) eslDefaultJsonImplClass.getConstructor(Properties.class, Properties.class)
                 .newInstance(AgentPackagePath.getAgentProperties(), jsonConfigProperties);
-
+        if (jsonFacade instanceof JVMShutdownCallback) {
+          JVMShutdown.getInstance().addJvmShutdownCallback((JVMShutdownCallback) jsonFacade);
+        }
       } catch (ClassNotFoundException | InvocationTargetException |
                InstantiationException | IllegalAccessException | NoSuchMethodException e) {
         throw new RuntimeException(e);
@@ -148,7 +155,13 @@ public class ExtFacade {
   private static final Map<String, LogFacade> logFacadeMap = new ConcurrentHashMap<>();
 
   public static LogFacade createLogFacade(String name) {
-    return logFacadeMap.computeIfAbsent(name, ExtFacade::_createLogFacade);
+    return logFacadeMap.computeIfAbsent(name, s -> {
+      LogFacade logFacade = _createLogFacade(s);
+      if (logFacade instanceof JVMShutdownCallback) {
+        JVMShutdown.getInstance().addJvmShutdownCallback((JVMShutdownCallback) logFacade);
+      }
+      return logFacade;
+    });
   }
 
   public static LogFacade createLogFacade(Class<?> clazz) {
@@ -156,7 +169,13 @@ public class ExtFacade {
   }
 
   public static LogFacade createLogFacade(String name, String fqcn) {
-    return logFacadeMap.computeIfAbsent(name, s -> _createLogFacade(s, fqcn));
+    return logFacadeMap.computeIfAbsent(name, s -> {
+      LogFacade logFacade = _createLogFacade(s, fqcn);
+      if (logFacade instanceof JVMShutdownCallback) {
+        JVMShutdown.getInstance().addJvmShutdownCallback((JVMShutdownCallback) logFacade);
+      }
+      return logFacade;
+    });
   }
 
   public static LogFacade createLogFacade(Class<?> clazz, String fqcn) {

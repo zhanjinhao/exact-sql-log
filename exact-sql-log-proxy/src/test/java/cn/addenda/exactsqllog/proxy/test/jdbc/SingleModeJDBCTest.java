@@ -25,6 +25,8 @@ public class SingleModeJDBCTest {
     test_statement_execute_update_autoCommit_false_commit(connection1);
     Connection connection2 = dataSource.getConnection();
     test_statement_execute_update_autoCommit_false_commit(connection2);
+
+    Thread.sleep(10000);
   }
 
   protected void test_statement_execute_update_autoCommit_false_commit(Connection connection) throws Exception {
@@ -43,8 +45,6 @@ public class SingleModeJDBCTest {
     preparedStatement.addBatch();
 
     connection.close();
-
-
 
   }
 

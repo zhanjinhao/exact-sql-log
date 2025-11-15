@@ -16,7 +16,7 @@ import java.util.function.BiConsumer;
 
 public class AgentChainSqlWriter implements SqlWriter {
 
-  private static final SystemLogger systemLogger =
+  private static final SystemLogger log =
           AgentDefaultSystemLoggerFactory.getInstance().getSystemLogger(AgentChainSqlWriter.class);
 
   private final List<SqlWriter> sqlWriterList;
@@ -100,8 +100,9 @@ public class AgentChainSqlWriter implements SqlWriter {
 
   private class TaskConsumer implements JVMShutdownCallback {
     private final NamedBiConsumer<SqlWriter, Execution> biConsumer;
-    private volatile LinkedBlockingQueue<Execution> executionQueue;
-    private volatile Thread taskConsumer;
+    private final LinkedBlockingQueue<Execution> executionQueue;
+    private final Thread taskConsumer;
+    private volatile boolean ifRunning = false;
 
     public TaskConsumer(NamedBiConsumer<SqlWriter, Execution> biConsumer) {
       this.biConsumer = biConsumer;
@@ -110,10 +111,19 @@ public class AgentChainSqlWriter implements SqlWriter {
       this.taskConsumer.setDaemon(true);
       this.taskConsumer.setName("AgentChainSqlWriter-taskConsumer-" + biConsumer.getName() + "-Thread");
       this.taskConsumer.start();
+      this.ifRunning = true;
     }
 
-    public boolean offer(Execution execution) {
-      return executionQueue.offer(execution);
+    public void offer(Execution execution) {
+      if (!ifRunning) {
+        log.error("TaskConsumer[{}]未在运行，无法处理Execution[{}]。", ExtFacade.toStr(execution));
+        return;
+      }
+      boolean offer = executionQueue.offer(execution);
+      if (!offer) {
+        log.error("TaskConsumer[{}]的队列已满，无法处理Execution[{}]。", ExtFacade.toStr(execution));
+        return;
+      }
     }
 
     private void run() {
@@ -123,11 +133,11 @@ public class AgentChainSqlWriter implements SqlWriter {
           take = executionQueue.take();
           doAccept(take);
         } catch (InterruptedException e) {
-          systemLogger.debug("{}关闭", taskConsumer.getName());
+          log.debug("{}关闭", taskConsumer.getName());
           Thread.currentThread().interrupt();
           break;
         } catch (Throwable t) {
-          systemLogger.error("unexpected error: [{}].", take, t);
+          log.error("unexpected error: [{}].", ExtFacade.toStr(take), t);
         }
       }
     }
@@ -139,6 +149,7 @@ public class AgentChainSqlWriter implements SqlWriter {
 
     @Override
     public void shutdown() {
+      this.ifRunning = false;
       if (taskConsumer != null) {
         taskConsumer.interrupt();
       }
@@ -147,20 +158,22 @@ public class AgentChainSqlWriter implements SqlWriter {
       }
       Execution[] array = executionQueue.toArray(new Execution[]{});
       if (array.length > 0) {
-        systemLogger.error("[{}]已关闭, 还有[{}]个Execution未被执行", biConsumer.getName(), array.length);
+        log.error("[{}]已关闭, 还有[{}]个Execution未被执行。", biConsumer.getName(), array.length);
         for (Execution execution : array) {
           doAccept(execution);
         }
+      } else {
+        log.info("[{}]已关闭, 所有Execution都执行完成。", biConsumer.getName(), array.length);
       }
     }
 
-    private void doAccept(Execution take) {
+    private void doAccept(Execution execution) {
       for (SqlWriter sqlWriter : sqlWriterList) {
         try {
-          biConsumer.accept(sqlWriter, take);
+          biConsumer.accept(sqlWriter, execution);
         } catch (Throwable t) {
-          systemLogger.error("[{}] {} error. Execution is [{}].",
-                  sqlWriter, biConsumer.getName(), ExtFacade.toStr(take), t);
+          log.error("[{}] {} error. Execution is [{}].",
+                  sqlWriter, biConsumer.getName(), ExtFacade.toStr(execution), t);
         }
       }
     }

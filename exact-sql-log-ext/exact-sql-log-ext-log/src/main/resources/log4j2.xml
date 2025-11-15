@@ -227,7 +227,7 @@
     <!-- name: 打印日志的类的包路径 -->
     <!-- level日志级别: ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF -->
     <!-- additivity: true当前的Logger打印的日志附加到Root,false仅仅在当前Logger打印 -->
-    <Logger name="cn.addenda.exactsqllog.agent.writer.AgentLogSqlWriter" level="ALL" additivity="true">
+    <Logger name="cn.addenda.exactsqllog.agent.writer.AgentLogSqlWriter" level="ALL" additivity="false">
       <AppenderRef ref="RollingFile_EXECUTION"/>
     </Logger>
 

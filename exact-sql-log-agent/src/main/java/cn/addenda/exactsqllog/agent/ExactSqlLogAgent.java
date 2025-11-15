@@ -18,13 +18,8 @@ import static net.bytebuddy.matcher.ElementMatchers.nameContains;
 import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 
 /**
- * todo: 遗留问题，
- * 1、RuntimeException 改为自定义异常
- * 2、拦截接口的进入点，事务的进入点，orm的进入点
- * <p>
- * com.alibaba.druid.pool.DruidConnectionHolder#reset()
- * <p>
- * com.zaxxer.hikari.pool.PoolEntry#(long)
+ * todo: 遗留问题
+ * 1、拦截接口的进入点，事务的进入点，orm的进入点
  */
 public class ExactSqlLogAgent {
 

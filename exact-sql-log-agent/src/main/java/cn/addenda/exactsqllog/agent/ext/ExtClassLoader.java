@@ -1,6 +1,7 @@
 package cn.addenda.exactsqllog.agent.ext;
 
 import cn.addenda.exactsqllog.agent.AgentPackagePath;
+import cn.addenda.exactsqllog.agent.ExactSqlLogAgentBootstrapException;
 import lombok.Getter;
 
 import java.io.File;
@@ -62,12 +63,8 @@ public class ExtClassLoader extends URLClassLoader {
       urlList.addAll(Arrays.stream(ExtClassLoader.findJarUrls(extLibPath)).collect(Collectors.toList()));
     }
     // 添加扩展jar文件
-    try {
-      for (URL url : urlList) {
-        addURL(url);
-      }
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to add extension URLs", e);
+    for (URL url : urlList) {
+      addURL(url);
     }
   }
 
@@ -81,7 +78,7 @@ public class ExtClassLoader extends URLClassLoader {
           try {
             urls.add(jar.toURI().toURL());
           } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            throw new ExactSqlLogAgentBootstrapException(String.format("Cannot get url of jar: [%s].", jar.getAbsolutePath()), e);
           }
         }
       }

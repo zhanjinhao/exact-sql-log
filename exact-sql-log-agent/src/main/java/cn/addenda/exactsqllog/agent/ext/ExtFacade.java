@@ -1,10 +1,11 @@
 package cn.addenda.exactsqllog.agent.ext;
 
 import cn.addenda.exactsqllog.agent.AgentPackagePath;
+import cn.addenda.exactsqllog.agent.ExactSqlLogAgentBootstrapException;
+import cn.addenda.exactsqllog.agent.util.FileUtils;
 import cn.addenda.exactsqllog.common.bo.Execution;
 import cn.addenda.exactsqllog.common.jvm.JVMShutdown;
 import cn.addenda.exactsqllog.common.jvm.JVMShutdownCallback;
-import cn.addenda.exactsqllog.common.util.FileUtils;
 import cn.addenda.exactsqllog.ext.facade.HttpFacade;
 import cn.addenda.exactsqllog.ext.facade.JsonFacade;
 import cn.addenda.exactsqllog.ext.facade.LogFacade;
@@ -29,18 +30,20 @@ public class ExtFacade {
   //   初始化HttpFacade及实现
   // ------------------------
 
+  static String httpFacadeImpl;
   static File httpConfigFile;
   static Properties httpConfigProperties;
   static HttpFacade httpFacade;
   static String receiveExecutionUrl;
 
   private static void initHttpFacade() {
+    httpFacadeImpl = AgentPackagePath.getAgentProperties().getProperty("httpFacade.impl");
     httpConfigFile = new File(ExtClassLoader.getExtHttpPath(), "http.properties");
     httpConfigProperties = FileUtils.loadProperties(httpConfigFile);
 
     Consumer<ClassLoader> runnable = extClassLoader -> {
       try {
-        Class<?> eslDefaultHttpImplClass = Class.forName("cn.addenda.exactsqllog.ext.http.EslDefaultHttpImpl", true, extClassLoader);
+        Class<?> eslDefaultHttpImplClass = Class.forName(httpFacadeImpl, true, extClassLoader);
         httpFacade = (HttpFacade) eslDefaultHttpImplClass.getConstructor(Properties.class, Properties.class)
                 .newInstance(AgentPackagePath.getAgentProperties(), httpConfigProperties);
         if (httpFacade instanceof JVMShutdownCallback) {
@@ -48,7 +51,7 @@ public class ExtFacade {
         }
       } catch (InstantiationException | IllegalAccessException |
                InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
-        throw new RuntimeException(e);
+        throw new ExactSqlLogAgentBootstrapException(String.format("Cannot init httpFacade: [%s].", httpFacadeImpl), e);
       }
     };
     runWithExtClassLoader(runnable);
@@ -58,16 +61,19 @@ public class ExtFacade {
   //   初始化JsonFacade及实现
   // ------------------------
 
+  static String jsonFacadeImpl;
   static File jsonConfigFile;
   static Properties jsonConfigProperties;
   static JsonFacade jsonFacade;
 
   private static void initJsonFacade() {
+    jsonFacadeImpl = AgentPackagePath.getAgentProperties().getProperty("jsonFacade.impl");
     jsonConfigFile = new File(ExtClassLoader.getExtJsonPath(), "json.properties");
+    jsonConfigProperties = FileUtils.loadProperties(jsonConfigFile);
 
     Consumer<ClassLoader> runnable = extClassLoader -> {
       try {
-        Class<?> eslDefaultJsonImplClass = Class.forName("cn.addenda.exactsqllog.ext.json.EslDefaultJsonImpl", true, extClassLoader);
+        Class<?> eslDefaultJsonImplClass = Class.forName(jsonFacadeImpl, true, extClassLoader);
         jsonFacade = (JsonFacade) eslDefaultJsonImplClass.getConstructor(Properties.class, Properties.class)
                 .newInstance(AgentPackagePath.getAgentProperties(), jsonConfigProperties);
         if (jsonFacade instanceof JVMShutdownCallback) {
@@ -75,29 +81,31 @@ public class ExtFacade {
         }
       } catch (ClassNotFoundException | InvocationTargetException |
                InstantiationException | IllegalAccessException | NoSuchMethodException e) {
-        throw new RuntimeException(e);
+        throw new ExactSqlLogAgentBootstrapException(String.format("Cannot init jsonFacade: [%s].", jsonFacadeImpl), e);
       }
     };
     runWithExtClassLoader(runnable);
     receiveExecutionUrl = AgentPackagePath.getAgentProperties().getProperty("receiveExecution.url");
   }
 
+  static String logFacadeImpl;
   static File logConfigFile;
 
   private static void initLogFacade() {
+    logFacadeImpl = AgentPackagePath.getAgentProperties().getProperty("logFacade.impl");
     logConfigFile = new File(ExtClassLoader.getExtLogPath(), "log4j2.xml");
   }
 
   private static LogFacade _createLogFacade(String name) {
     Function<ClassLoader, LogFacade> runnable = extClassLoader -> {
       try {
-        Class<?> eslDefaultLogImplClass = Class.forName("cn.addenda.exactsqllog.ext.log.EslDefaultLogImpl", true, extClassLoader);
+        Class<?> eslDefaultLogImplClass = Class.forName(logFacadeImpl, true, extClassLoader);
         return (LogFacade) eslDefaultLogImplClass.getConstructor(Properties.class, File.class, String.class)
                 .newInstance(AgentPackagePath.getAgentProperties(), logConfigFile, name);
 
       } catch (InstantiationException | IllegalAccessException |
                InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
-        throw new RuntimeException(e);
+        throw new ExactSqlLogAgentBootstrapException(String.format("Cannot create logFacade: [%s].", logFacadeImpl), e);
       }
     };
     return applyWithExtClassLoader(runnable);
@@ -106,13 +114,13 @@ public class ExtFacade {
   private static LogFacade _createLogFacade(String name, String fqcn) {
     Function<ClassLoader, LogFacade> runnable = extClassLoader -> {
       try {
-        Class<?> eslDefaultLogImplClass = Class.forName("cn.addenda.exactsqllog.ext.log.EslDefaultLogImpl", true, extClassLoader);
+        Class<?> eslDefaultLogImplClass = Class.forName(logFacadeImpl, true, extClassLoader);
         return (LogFacade) eslDefaultLogImplClass.getConstructor(Properties.class, File.class, String.class, String.class)
                 .newInstance(AgentPackagePath.getAgentProperties(), logConfigFile, name, fqcn);
 
       } catch (InstantiationException | IllegalAccessException |
                InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
-        throw new RuntimeException(e);
+        throw new ExactSqlLogAgentBootstrapException(String.format("Cannot create logFacade: [%s].", logFacadeImpl), e);
       }
     };
     return applyWithExtClassLoader(runnable);

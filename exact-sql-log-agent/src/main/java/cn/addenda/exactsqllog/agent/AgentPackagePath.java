@@ -1,6 +1,8 @@
 package cn.addenda.exactsqllog.agent;
 
-import cn.addenda.exactsqllog.common.util.FileUtils;
+import cn.addenda.exactsqllog.agent.util.FileUtils;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -13,6 +15,7 @@ import java.util.Properties;
  * The path is the required metadata for agent core looking up the plugins and toolkit activations. If the lookup
  * mechanism fails, the agent will exit directly.
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AgentPackagePath {
 
   private static File AGENT_PACKAGE_PATH;
@@ -51,7 +54,7 @@ public class AgentPackagePath {
         try {
           agentJarFile = new File(new URL(urlString).toURI());
         } catch (MalformedURLException | URISyntaxException e) {
-          throw new RuntimeException("cannot find agent path");
+          throw new ExactSqlLogAgentBootstrapException(String.format("Cannot find agent path. ClassResourcePath is [%s].", classResourcePath));
         }
         if (agentJarFile.exists()) {
           return agentJarFile.getParentFile();
@@ -64,7 +67,7 @@ public class AgentPackagePath {
       }
     }
 
-    throw new RuntimeException("cannot find agent path");
+    throw new ExactSqlLogAgentBootstrapException(String.format("Cannot find agent path. ClassResourcePath is [%s].", classResourcePath));
   }
 
   private static synchronized File getAgentConf() {

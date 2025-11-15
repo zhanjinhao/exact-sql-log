@@ -1,6 +1,7 @@
 package cn.addenda.exactsqllog.ext.http;
 
 import cn.addenda.exactsqllog.common.jvm.JVMShutdownCallback;
+import cn.addenda.exactsqllog.ext.ExactSqlLogExtException;
 import cn.addenda.exactsqllog.ext.facade.HttpFacade;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +23,6 @@ import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Properties;
 
 public class EslDefaultHttpImpl implements HttpFacade, JVMShutdownCallback {
@@ -78,14 +78,12 @@ public class EslDefaultHttpImpl implements HttpFacade, JVMShutdownCallback {
   }
 
   public void sendRequest(String uri, String jsonParam) {
-    try {
-      doSendRequest(uri, jsonParam);
-    } catch (URISyntaxException | IOException e) {
-      throw new RuntimeException(e);
-    }
+    ExactSqlLogExtException.runWithExactSqlLogExtException(
+            () -> doSendRequest(uri, jsonParam)
+    );
   }
 
-  private void doSendRequest(String uri, String jsonParam) throws URISyntaxException, IOException {
+  private void doSendRequest(String uri, String jsonParam) throws IOException {
     final HttpPost httpPost = new HttpPost(uri);
 
     // 设置请求头，指定内容类型为 JSON

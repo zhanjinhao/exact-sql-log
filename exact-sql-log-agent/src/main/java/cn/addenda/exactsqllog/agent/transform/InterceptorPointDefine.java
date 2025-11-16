@@ -6,10 +6,11 @@ import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
 
 import java.util.List;
+import java.util.Set;
 
 public interface InterceptorPointDefine {
 
-  String getEnhancedClassName();
+  Set<String> getEnhancedClassNameSet();
 
   List<InterceptorPoint> getInterceptorPointList();
 

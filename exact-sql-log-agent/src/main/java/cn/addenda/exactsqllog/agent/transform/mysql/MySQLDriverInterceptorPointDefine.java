@@ -5,12 +5,13 @@ import cn.addenda.exactsqllog.agent.transform.InterceptorPointDefine;
 import cn.addenda.exactsqllog.common.util.ArrayUtils;
 
 import java.util.List;
+import java.util.Set;
 
 public class MySQLDriverInterceptorPointDefine implements InterceptorPointDefine {
 
   @Override
-  public String getEnhancedClassName() {
-    return "com.mysql.cj.jdbc.NonRegisteringDriver";
+  public Set<String> getEnhancedClassNameSet() {
+    return ArrayUtils.asHashSet("com.mysql.cj.jdbc.NonRegisteringDriver");
   }
 
   @Override

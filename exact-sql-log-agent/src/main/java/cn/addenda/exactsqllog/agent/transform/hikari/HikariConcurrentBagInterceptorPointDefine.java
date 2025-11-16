@@ -5,12 +5,13 @@ import cn.addenda.exactsqllog.agent.transform.InterceptorPointDefine;
 import cn.addenda.exactsqllog.common.util.ArrayUtils;
 
 import java.util.List;
+import java.util.Set;
 
 public class HikariConcurrentBagInterceptorPointDefine implements InterceptorPointDefine {
 
   @Override
-  public String getEnhancedClassName() {
-    return "com.zaxxer.hikari.util.ConcurrentBag";
+  public Set<String> getEnhancedClassNameSet() {
+    return ArrayUtils.asHashSet("com.zaxxer.hikari.util.ConcurrentBag");
   }
 
   @Override

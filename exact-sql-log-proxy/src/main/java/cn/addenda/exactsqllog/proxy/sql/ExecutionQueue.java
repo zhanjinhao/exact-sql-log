@@ -44,7 +44,7 @@ public class ExecutionQueue {
     }
   }
 
-  public void outputQuery(Execution execution) {
+  private void outputQuery(Execution execution) {
     synchronized (this) {
       execution.setExecutionState(Execution.EXECUTION_STATE_QUERY);
       sqlWriter.logQuery(execution);

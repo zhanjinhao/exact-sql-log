@@ -5,12 +5,13 @@ import cn.addenda.exactsqllog.agent.transform.InterceptorPointDefine;
 import cn.addenda.exactsqllog.common.util.ArrayUtils;
 
 import java.util.List;
+import java.util.Set;
 
 public class DruidDruidDataSourceInterceptorPointDefine implements InterceptorPointDefine {
 
   @Override
-  public String getEnhancedClassName() {
-    return "com.alibaba.druid.pool.DruidDataSource";
+  public Set<String> getEnhancedClassNameSet() {
+    return ArrayUtils.asHashSet("com.alibaba.druid.pool.DruidDataSource");
   }
 
   @Override

@@ -12,9 +12,11 @@ public class InterceptorPointDefineGather {
   private final Map<String, LinkedList<InterceptorPointDefine>> interceptorPointDefineMap = new HashMap<>();
 
   public void addInterceptorPointDefine(InterceptorPointDefine interceptorPointDefine) {
-    LinkedList<InterceptorPointDefine> interceptorPointDefines =
-            interceptorPointDefineMap.computeIfAbsent(interceptorPointDefine.getEnhancedClassName(), s -> new LinkedList<>());
-    interceptorPointDefines.add(interceptorPointDefine);
+    for (String enhancedClassName : interceptorPointDefine.getEnhancedClassNameSet()) {
+      LinkedList<InterceptorPointDefine> interceptorPointDefines =
+              interceptorPointDefineMap.computeIfAbsent(enhancedClassName, s -> new LinkedList<>());
+      interceptorPointDefines.add(interceptorPointDefine);
+    }
   }
 
   /**

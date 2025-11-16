@@ -1,12 +1,12 @@
 package cn.addenda.exactsqllog.common.bo;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @ToString
-@AllArgsConstructor
-@NoArgsConstructor
 public abstract class AbstractSqlBo implements Execution {
 
   private String executionState;
@@ -18,6 +18,21 @@ public abstract class AbstractSqlBo implements Execution {
 
   private Long start;
   private Long end;
+
+  protected AbstractSqlBo(
+          String executionState, String dataSourceEslId, String connectionEslId, String statementEslId,
+          String txId, Long start, Long end) {
+    this.executionState = executionState;
+    this.dataSourceEslId = dataSourceEslId;
+    this.connectionEslId = connectionEslId;
+    this.statementEslId = statementEslId;
+    this.txId = txId;
+    this.start = start;
+    this.end = end;
+  }
+
+  protected AbstractSqlBo() {
+  }
 
   @Override
   public String getExecutionState() {

@@ -6,6 +6,7 @@ import cn.addenda.exactsqllog.common.pojo.Ternary;
 import cn.addenda.exactsqllog.common.pojo.Unary;
 import cn.addenda.exactsqllog.common.util.UuidUtils;
 import cn.addenda.exactsqllog.proxy.sql.EslPreparedStatementSqlAttachment;
+import cn.addenda.exactsqllog.proxy.util.SqlUtils;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -568,8 +569,12 @@ public class EslPreparedStatement
   }
 
   private void execute(long start) {
-    // todo 区分update和query
-    throw new UnsupportedOperationException();
+    String sql = eslStatementSqlAttachment.getParameterizedSql();
+    if (SqlUtils.ifQuerySql(sql)) {
+      executeQuery(sql, start);
+    } else {
+      executeUpdate(sql, start);
+    }
   }
 
   private void executeUpdate(long start) {

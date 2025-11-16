@@ -4,6 +4,7 @@ import cn.addenda.exactsqllog.common.bo.Execution;
 import cn.addenda.exactsqllog.common.util.UuidUtils;
 import cn.addenda.exactsqllog.proxy.sql.EslStatementSqlAttachment;
 import cn.addenda.exactsqllog.proxy.sql.ExecutionQueue;
+import cn.addenda.exactsqllog.proxy.util.SqlUtils;
 
 import java.sql.*;
 
@@ -237,8 +238,11 @@ public abstract class AbstractEslStatement<T extends Statement, P extends EslSta
   }
 
   protected void execute(String sql, long start) {
-    // todo 区分update和query
-    throw new UnsupportedOperationException();
+    if (SqlUtils.ifQuerySql(sql)) {
+      executeQuery(sql, start);
+    } else {
+      executeUpdate(sql, start);
+    }
   }
 
   protected void executeUpdate(String sql, long start) {

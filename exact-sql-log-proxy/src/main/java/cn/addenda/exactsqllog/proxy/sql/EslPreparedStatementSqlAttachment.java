@@ -8,6 +8,7 @@ import cn.addenda.exactsqllog.common.pojo.Binary;
 import cn.addenda.exactsqllog.common.pojo.Ternary;
 import cn.addenda.exactsqllog.common.pojo.Unary;
 import cn.addenda.exactsqllog.proxy.jdbc.EslPreparedStatement;
+import lombok.Getter;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -21,6 +22,7 @@ import java.util.List;
  */
 public class EslPreparedStatementSqlAttachment extends EslStatementSqlAttachment {
 
+  @Getter
   private final String parameterizedSql;
   private final PreparedStatementParameterWrapper preparedStatementParameterWrapper;
   protected PreparedSqlBo stashedPreparedSqlBo;

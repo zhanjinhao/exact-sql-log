@@ -1,5 +1,7 @@
 package cn.addenda.exactsqllog.common.bo;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.util.ArrayList;
@@ -8,10 +10,16 @@ import java.util.List;
 @ToString
 public class PreparedStatementParameterWrapper implements SqlExecutionOrder {
 
+  @Getter
+  @Setter
   private int capacity = 0;
 
+  @Getter
+  @Setter
   private List<String> setMethodList = new ArrayList<>();
 
+  @Getter
+  @Setter
   private List<Object> parameterList = new ArrayList<>();
 
   private int order;

@@ -571,9 +571,9 @@ public class EslPreparedStatement
   private void execute(long start) {
     String sql = eslStatementSqlAttachment.getParameterizedSql();
     if (SqlUtils.ifQuerySql(sql)) {
-      executeQuery(sql, start);
+      executeQuery(start);
     } else {
-      executeUpdate(sql, start);
+      executeUpdate(start);
     }
   }
 

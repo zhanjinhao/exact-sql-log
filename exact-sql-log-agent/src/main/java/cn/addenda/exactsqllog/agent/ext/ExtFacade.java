@@ -3,7 +3,9 @@ package cn.addenda.exactsqllog.agent.ext;
 import cn.addenda.exactsqllog.agent.AgentPackagePath;
 import cn.addenda.exactsqllog.agent.ExactSqlLogAgentBootstrapException;
 import cn.addenda.exactsqllog.agent.util.FileUtils;
-import cn.addenda.exactsqllog.common.bo.Execution;
+import cn.addenda.exactsqllog.common.bo.PreparedSqlBo;
+import cn.addenda.exactsqllog.common.bo.SqlBo;
+import cn.addenda.exactsqllog.common.config.EslConnectionConfig;
 import cn.addenda.exactsqllog.common.jvm.JVMShutdown;
 import cn.addenda.exactsqllog.common.jvm.JVMShutdownCallback;
 import cn.addenda.exactsqllog.ext.facade.HttpFacade;
@@ -34,7 +36,9 @@ public class ExtFacade {
   static File httpConfigFile;
   static Properties httpConfigProperties;
   static HttpFacade httpFacade;
-  static String receiveExecutionUrl;
+  static String receivePreparedSqlBoUrl;
+  static String receiveSqlBoUrl;
+  static String receiveEslConnectionConfigUrl;
 
   private static void initHttpFacade() {
     httpFacadeImpl = AgentPackagePath.getAgentProperties().getProperty("httpFacade.impl");
@@ -85,7 +89,9 @@ public class ExtFacade {
       }
     };
     runWithExtClassLoader(runnable);
-    receiveExecutionUrl = AgentPackagePath.getAgentProperties().getProperty("receiveExecution.url");
+    receivePreparedSqlBoUrl = AgentPackagePath.getAgentProperties().getProperty("receivePreparedSqlBo.url");
+    receiveSqlBoUrl = AgentPackagePath.getAgentProperties().getProperty("receiveSqlBo.url");
+    receiveEslConnectionConfigUrl = AgentPackagePath.getAgentProperties().getProperty("receiveEslConnectionConfig.url");
   }
 
   static String logFacadeImpl;
@@ -148,8 +154,16 @@ public class ExtFacade {
     }
   }
 
-  public static void sendExecution(Execution execution) {
-    httpFacade.sendRequest(receiveExecutionUrl, toStr(execution));
+  public static void sendPreparedSqlBo(PreparedSqlBo preparedSqlBo) {
+    httpFacade.sendRequest(receivePreparedSqlBoUrl, toStr(preparedSqlBo));
+  }
+
+  public static void sendSqlBo(SqlBo sqlBo) {
+    httpFacade.sendRequest(receiveSqlBoUrl, toStr(sqlBo));
+  }
+
+  public static void sendEslConnectionConfig(EslConnectionConfig eslConnectionConfig) {
+    httpFacade.sendRequest(receiveEslConnectionConfigUrl, toStr(eslConnectionConfig));
   }
 
   public static String toStr(Object input) {

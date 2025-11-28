@@ -155,9 +155,9 @@
 
     <!-- RollingFile:日志输出到文件,下面的文件都使用相对路径 -->
     <!-- fileName:当前日志输出的文件名称 -->
-    <!-- filePattern:备份日志文件名称,备份目录为logs下面以年月命名的目录下的${FILE_NAME}_EXECUTION目录,备份时使用gz格式压缩 -->
-    <RollingFile name="RollingFile_EXECUTION" fileName="${LOG_HOME}/${FILE_NAME}_EXECUTION.log"
-                 filePattern="${LOG_HOME}/${FILE_NAME}_EXECUTION/$${date:yyyy-MM-dd}/${FILE_NAME}_EXECUTION-%d{yyyy-MM-dd}-%04i.log.gz">
+    <!-- filePattern:备份日志文件名称,备份目录为logs下面以年月命名的目录下的${FILE_NAME}_OUTPUT目录,备份时使用gz格式压缩 -->
+    <RollingFile name="RollingFile_OUTPUT" fileName="${LOG_HOME}/${FILE_NAME}_OUTPUT.log"
+                 filePattern="${LOG_HOME}/${FILE_NAME}_OUTPUT/$${date:yyyy-MM-dd}/${FILE_NAME}_OUTPUT-%d{yyyy-MM-dd}-%04i.log.gz">
       <PatternLayout pattern="${LOG_PATTERN}"/>
       <!-- Policies:触发策略决定何时执行备份 -->
       <Policies>
@@ -175,7 +175,7 @@
       <!-- compressionLevel:配置日志压缩级别,范围0-9,0不压缩,1压缩速度最快,9压缩率最好,目前只对于zip压缩文件类型有效 -->
       <DefaultRolloverStrategy max="5" compressionLevel="1">
         <!-- Delete:删除匹配到的过期备份文件.这个标签和max属性只要有任意一个匹配上,备份文件都会被删除 -->
-        <!-- maxDepth:由于备份文件保存在${LOG_HOME}/$${date:yyyy-MM}/${FILE_NAME}_EXECUTION,所以目录深度设置为3 -->
+        <!-- maxDepth:由于备份文件保存在${LOG_HOME}/$${date:yyyy-MM}/${FILE_NAME}_OUTPUT,所以目录深度设置为3 -->
         <Delete basePath="${LOG_HOME}" maxDepth="3">
           <!-- IfFileName:匹配文件名称 -->
           <!-- glob:匹配2级目录深度下的以.log.gz结尾的备份文件 -->
@@ -223,12 +223,12 @@
   </Appenders>
   <!-- Loggers:定义日志级别和使用的Appenders -->
   <Loggers>
-    <!-- ExecutionQueue的日志单独输出到一个文件 -->
+    <!-- Execution和Config的日志单独输出到一个文件 -->
     <!-- name: 打印日志的类的包路径 -->
     <!-- level日志级别: ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF -->
     <!-- additivity: true当前的Logger打印的日志附加到Root,false仅仅在当前Logger打印 -->
     <Logger name="cn.addenda.exactsqllog.agent.writer.AgentLogSqlWriter" level="ALL" additivity="false">
-      <AppenderRef ref="RollingFile_EXECUTION"/>
+      <AppenderRef ref="RollingFile_OUTPUT"/>
     </Logger>
 
     <!-- HTTP的日志单独输出到一个文件 -->

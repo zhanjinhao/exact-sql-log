@@ -1,6 +1,8 @@
 package cn.addenda.exactsqllog.agent.transform;
 
 import cn.addenda.exactsqllog.agent.system.AgentDefaultSystemLoggerFactory;
+import cn.addenda.exactsqllog.agent.transform.interceptor.InterceptorPointDefine;
+import cn.addenda.exactsqllog.agent.transform.interceptor.InterceptorPointDefineGather;
 import cn.addenda.exactsqllog.proxy.system.SystemLogger;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;

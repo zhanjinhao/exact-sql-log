@@ -1,16 +1,19 @@
 package cn.addenda.exactsqllog.agent.writer;
 
+import cn.addenda.exactsqllog.agent.AgentPackagePath;
 import cn.addenda.exactsqllog.agent.ext.ExtFacade;
 import cn.addenda.exactsqllog.agent.system.AgentDefaultSystemLoggerFactory;
 import cn.addenda.exactsqllog.common.bo.Execution;
+import cn.addenda.exactsqllog.common.config.EslConnectionConfig;
 import cn.addenda.exactsqllog.common.jvm.JVMShutdown;
 import cn.addenda.exactsqllog.common.jvm.JVMShutdownCallback;
 import cn.addenda.exactsqllog.proxy.system.SystemLogger;
 import cn.addenda.exactsqllog.proxy.writer.SqlWriter;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.BiConsumer;
 
@@ -21,8 +24,8 @@ public class AgentChainSqlWriter implements SqlWriter {
 
   private final List<SqlWriter> sqlWriterList;
 
-  private final TaskConsumer logCommitTaskConsumer =
-          new TaskConsumer(new NamedBiConsumer<SqlWriter, Execution>() {
+  private final TaskConsumer<Execution> logCommitTaskConsumer =
+          new TaskConsumer<>(new NamedBiConsumer<SqlWriter, Execution>() {
             @Override
             public String getName() {
               return "logCommit";
@@ -32,10 +35,10 @@ public class AgentChainSqlWriter implements SqlWriter {
             public void accept(SqlWriter sqlWriter, Execution execution) {
               sqlWriter.logCommit(execution);
             }
-          });
+          }, 10000);
 
-  private final TaskConsumer logRollbackTaskConsumer =
-          new TaskConsumer(new NamedBiConsumer<SqlWriter, Execution>() {
+  private final TaskConsumer<Execution> logRollbackTaskConsumer =
+          new TaskConsumer<>(new NamedBiConsumer<SqlWriter, Execution>() {
             @Override
             public String getName() {
               return "logRollback";
@@ -45,10 +48,10 @@ public class AgentChainSqlWriter implements SqlWriter {
             public void accept(SqlWriter sqlWriter, Execution execution) {
               sqlWriter.logRollback(execution);
             }
-          });
+          }, 10000);
 
-  private final TaskConsumer logQueryTaskConsumer =
-          new TaskConsumer(new NamedBiConsumer<SqlWriter, Execution>() {
+  private final TaskConsumer<Execution> logQueryTaskConsumer =
+          new TaskConsumer<>(new NamedBiConsumer<SqlWriter, Execution>() {
             @Override
             public String getName() {
               return "logQuery";
@@ -58,29 +61,56 @@ public class AgentChainSqlWriter implements SqlWriter {
             public void accept(SqlWriter sqlWriter, Execution execution) {
               sqlWriter.logQuery(execution);
             }
-          });
+          }, 10000);
 
-  public AgentChainSqlWriter(List<SqlWriter> sqlWriterList) {
-    if (sqlWriterList != null) {
-      this.sqlWriterList = sqlWriterList;
-    } else {
-      this.sqlWriterList = new ArrayList<>();
-    }
+  private final TaskConsumer<EslConnectionConfig> logEslConnectionConfigTaskConsumer =
+          new TaskConsumer<>(new NamedBiConsumer<SqlWriter, EslConnectionConfig>() {
+            @Override
+            public String getName() {
+              return "logEslConnectionConfig";
+            }
+
+            @Override
+            public void accept(SqlWriter sqlWriter, EslConnectionConfig eslConnectionConfig) {
+              sqlWriter.logEslConnectionConfig(eslConnectionConfig);
+            }
+          }, 1000);
+
+  public AgentChainSqlWriter() {
+    sqlWriterList = initSqlWriter();
     initJvmShutdown();
   }
 
-  public AgentChainSqlWriter(SqlWriter... sqlWriters) {
-    sqlWriterList = new ArrayList<>();
-    if (sqlWriters != null) {
-      Collections.addAll(this.sqlWriterList, sqlWriters);
+  private List<SqlWriter> initSqlWriter() {
+    List<SqlWriter> _sqlWriterList = new ArrayList<>();
+    Properties agentProperties = AgentPackagePath.getAgentProperties();
+    String sqlWriterImplClass = agentProperties.getProperty("sqlWriter.impl");
+    if (sqlWriterImplClass == null || sqlWriterImplClass.isEmpty()) {
+      return _sqlWriterList;
     }
-    initJvmShutdown();
+
+    String[] sqlWriterImplClassnames = sqlWriterImplClass.split(",");
+    for (String sqlWriterImplClassname : sqlWriterImplClassnames) {
+      Optional.ofNullable(init(sqlWriterImplClassname)).ifPresent(_sqlWriterList::add);
+    }
+    return _sqlWriterList;
+  }
+
+  private SqlWriter init(String className) {
+    try {
+      Class<?> clazz = Class.forName(className);
+      return (SqlWriter) clazz.newInstance();
+    } catch (Exception e) {
+      log.error("初始化SqlWriter[{}]失败。", className, e);
+      return null;
+    }
   }
 
   private void initJvmShutdown() {
     JVMShutdown.getInstance().addJvmShutdownCallback(logCommitTaskConsumer);
     JVMShutdown.getInstance().addJvmShutdownCallback(logRollbackTaskConsumer);
     JVMShutdown.getInstance().addJvmShutdownCallback(logQueryTaskConsumer);
+    JVMShutdown.getInstance().addJvmShutdownCallback(logEslConnectionConfigTaskConsumer);
   }
 
   @Override
@@ -98,42 +128,47 @@ public class AgentChainSqlWriter implements SqlWriter {
     logQueryTaskConsumer.offer(execution);
   }
 
-  private class TaskConsumer implements JVMShutdownCallback {
-    private final NamedBiConsumer<SqlWriter, Execution> biConsumer;
-    private final LinkedBlockingQueue<Execution> executionQueue;
-    private final Thread taskConsumer;
+  @Override
+  public void logEslConnectionConfig(EslConnectionConfig eslConnectionConfig) {
+    logEslConnectionConfigTaskConsumer.offer(eslConnectionConfig);
+  }
+
+  private class TaskConsumer<T> implements JVMShutdownCallback {
+    private final NamedBiConsumer<SqlWriter, T> biConsumer;
+    private final LinkedBlockingQueue<T> taskQueue;
+    private final Thread taskConsumerThread;
     private volatile boolean ifRunning = false;
 
-    public TaskConsumer(NamedBiConsumer<SqlWriter, Execution> biConsumer) {
+    public TaskConsumer(NamedBiConsumer<SqlWriter, T> biConsumer, int queueSize) {
       this.biConsumer = biConsumer;
-      this.executionQueue = new LinkedBlockingQueue<>(10000);
-      this.taskConsumer = new Thread(this::run);
-      this.taskConsumer.setDaemon(true);
-      this.taskConsumer.setName("AgentChainSqlWriter-taskConsumer-" + biConsumer.getName() + "-Thread");
-      this.taskConsumer.start();
+      this.taskQueue = new LinkedBlockingQueue<>(queueSize);
+      this.taskConsumerThread = new Thread(this::run);
+      this.taskConsumerThread.setDaemon(true);
+      this.taskConsumerThread.setName("AgentChainSqlWriter-taskConsumer-" + biConsumer.getName() + "-Thread");
+      this.taskConsumerThread.start();
       this.ifRunning = true;
     }
 
-    public void offer(Execution execution) {
+    public void offer(T task) {
       if (!ifRunning) {
-        log.error("TaskConsumer[{}]未在运行，无法处理Execution[{}]。", ExtFacade.toStr(execution));
+        log.error("TaskConsumer[{}]未在运行，无法处理Task[{}]。", ExtFacade.toStr(task));
         return;
       }
-      boolean offer = executionQueue.offer(execution);
+      boolean offer = taskQueue.offer(task);
       if (!offer) {
-        log.error("TaskConsumer[{}]的队列已满，无法处理Execution[{}]。", ExtFacade.toStr(execution));
+        log.error("TaskConsumer[{}]的队列已满，无法处理Task[{}]。", ExtFacade.toStr(task));
         return;
       }
     }
 
     private void run() {
       while (true) {
-        Execution take = null;
+        T take = null;
         try {
-          take = executionQueue.take();
+          take = taskQueue.take();
           doAccept(take);
         } catch (InterruptedException e) {
-          log.debug("{}关闭", taskConsumer.getName());
+          log.debug("{}关闭", taskConsumerThread.getName());
           Thread.currentThread().interrupt();
           break;
         } catch (Throwable t) {
@@ -150,30 +185,30 @@ public class AgentChainSqlWriter implements SqlWriter {
     @Override
     public void shutdown() {
       this.ifRunning = false;
-      if (taskConsumer != null) {
-        taskConsumer.interrupt();
+      if (taskConsumerThread != null) {
+        taskConsumerThread.interrupt();
       }
-      if (executionQueue == null) {
+      if (taskQueue == null) {
         return;
       }
-      Execution[] array = executionQueue.toArray(new Execution[]{});
+      Object[] array = taskQueue.toArray();
       if (array.length > 0) {
-        log.error("[{}]已关闭, 还有[{}]个Execution未被执行。", biConsumer.getName(), array.length);
-        for (Execution execution : array) {
-          doAccept(execution);
+        log.error("[{}]已关闭, 还有[{}]个task未被执行。", biConsumer.getName(), array.length);
+        for (Object task : array) {
+          doAccept((T) task);
         }
       } else {
-        log.info("[{}]已关闭, 所有Execution都执行完成。", biConsumer.getName(), array.length);
+        log.info("[{}]已关闭, 所有task都执行完成。", biConsumer.getName(), array.length);
       }
     }
 
-    private void doAccept(Execution execution) {
+    private void doAccept(T task) {
       for (SqlWriter sqlWriter : sqlWriterList) {
         try {
-          biConsumer.accept(sqlWriter, execution);
+          biConsumer.accept(sqlWriter, task);
         } catch (Throwable t) {
-          log.error("[{}] {} error. Execution is [{}].",
-                  sqlWriter, biConsumer.getName(), ExtFacade.toStr(execution), t);
+          log.error("[{}] {} error. Task is [{}].",
+                  sqlWriter, biConsumer.getName(), ExtFacade.toStr(task), t);
         }
       }
     }

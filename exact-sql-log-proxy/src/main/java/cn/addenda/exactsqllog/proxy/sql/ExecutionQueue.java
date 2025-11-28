@@ -1,6 +1,7 @@
 package cn.addenda.exactsqllog.proxy.sql;
 
 import cn.addenda.exactsqllog.common.bo.Execution;
+import cn.addenda.exactsqllog.proxy.entrypoint.EntryPointContext;
 import cn.addenda.exactsqllog.proxy.writer.SqlWriter;
 
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ public class ExecutionQueue {
   }
 
   public void output(Execution execution) {
+    execution.setEntryPointQueue(EntryPointContext.deepCopyAndGet());
     synchronized (this) {
       String executionState = execution.getExecutionState();
       if (Execution.EXECUTION_STATE_NEW.equals(executionState)) {

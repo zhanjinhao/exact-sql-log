@@ -101,7 +101,9 @@ public class EslDefaultHttpImpl implements HttpFacade, JVMShutdownCallback {
 
   @Override
   public void shutdown() throws Throwable {
-    closeableHttpClient.close();
+    if (closeableHttpClient != null) {
+      closeableHttpClient.close();
+    }
   }
 
   @Override

@@ -1,5 +1,7 @@
 package cn.addenda.exactsqllog.common.bo;
 
+import cn.addenda.exactsqllog.common.entrypoint.EntryPointQueue;
+
 import java.beans.Statement;
 import java.sql.PreparedStatement;
 
@@ -28,5 +30,9 @@ public interface Execution {
   String getStatementEslId();
 
   void setStatementEslId(String statementEslId);
+
+  void setEntryPointQueue(EntryPointQueue entryPointQueue);
+
+  EntryPointQueue getEntryPointQueue();
 
 }

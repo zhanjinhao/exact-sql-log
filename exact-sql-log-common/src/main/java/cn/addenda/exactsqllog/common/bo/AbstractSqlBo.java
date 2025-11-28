@@ -1,5 +1,6 @@
 package cn.addenda.exactsqllog.common.bo;
 
+import cn.addenda.exactsqllog.common.entrypoint.EntryPointQueue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,6 +19,8 @@ public abstract class AbstractSqlBo implements Execution {
 
   private Long start;
   private Long end;
+
+  private EntryPointQueue entryPointQueue;
 
   protected AbstractSqlBo(
           String executionState, String dataSourceEslId, String connectionEslId, String statementEslId,
@@ -72,6 +75,16 @@ public abstract class AbstractSqlBo implements Execution {
   @Override
   public void setStatementEslId(String statementEslId) {
     this.statementEslId = statementEslId;
+  }
+
+  @Override
+  public EntryPointQueue getEntryPointQueue() {
+    return entryPointQueue;
+  }
+
+  @Override
+  public void setEntryPointQueue(EntryPointQueue entryPointQueue) {
+    this.entryPointQueue = entryPointQueue;
   }
 
 }

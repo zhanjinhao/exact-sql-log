@@ -11,6 +11,8 @@ import java.net.URL;
 import java.util.Properties;
 
 /**
+ * todo rename to AgentPackage
+ *
  * AgentPackagePath is a flag and finder to locate the SkyWalking agent.jar. It gets the absolute path of the agent jar.
  * The path is the required metadata for agent core looking up the plugins and toolkit activations. If the lookup
  * mechanism fails, the agent will exit directly.

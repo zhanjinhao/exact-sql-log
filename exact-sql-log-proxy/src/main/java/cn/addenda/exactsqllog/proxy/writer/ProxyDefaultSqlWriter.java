@@ -1,6 +1,7 @@
 package cn.addenda.exactsqllog.proxy.writer;
 
 import cn.addenda.exactsqllog.common.bo.Execution;
+import cn.addenda.exactsqllog.common.config.EslConnectionConfig;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -19,6 +20,11 @@ public class ProxyDefaultSqlWriter implements SqlWriter {
   @Override
   public void logQuery(Execution execution) {
     log.info("query: {}", execution);
+  }
+
+  @Override
+  public void logEslConnectionConfig(EslConnectionConfig eslConnectionConfig) {
+    log.info("eslConnectionConfig: {}", eslConnectionConfig);
   }
 
 }

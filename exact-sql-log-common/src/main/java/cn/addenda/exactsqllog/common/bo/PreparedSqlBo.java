@@ -1,8 +1,6 @@
 package cn.addenda.exactsqllog.common.bo;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
@@ -15,6 +13,7 @@ import java.util.List;
 @Setter
 @Getter
 @ToString(callSuper = true)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class PreparedSqlBo extends AbstractSqlBo {
 
   private String parameterizedSql;

@@ -1,6 +1,6 @@
 package cn.addenda.exactsqllog.agent.ext;
 
-import cn.addenda.exactsqllog.agent.AgentPackagePath;
+import cn.addenda.exactsqllog.agent.AgentPackage;
 import cn.addenda.exactsqllog.agent.ExactSqlLogAgentBootstrapException;
 import cn.addenda.exactsqllog.agent.util.FileUtils;
 import cn.addenda.exactsqllog.common.bo.PreparedSqlBo;
@@ -41,7 +41,7 @@ public class ExtFacade {
   static String receiveEslConnectionConfigUrl;
 
   private static void initHttpFacade() {
-    httpFacadeImpl = AgentPackagePath.getAgentProperties().getProperty("httpFacade.impl");
+    httpFacadeImpl = AgentPackage.getAgentProperties().getProperty("httpFacade.impl");
     httpConfigFile = new File(ExtClassLoader.getExtHttpPath(), "http.properties");
     httpConfigProperties = FileUtils.loadProperties(httpConfigFile);
 
@@ -49,7 +49,7 @@ public class ExtFacade {
       try {
         Class<?> eslDefaultHttpImplClass = Class.forName(httpFacadeImpl, true, extClassLoader);
         httpFacade = (HttpFacade) eslDefaultHttpImplClass.getConstructor(Properties.class, Properties.class)
-                .newInstance(AgentPackagePath.getAgentProperties(), httpConfigProperties);
+                .newInstance(AgentPackage.getAgentProperties(), httpConfigProperties);
         if (httpFacade instanceof JVMShutdownCallback) {
           JVMShutdown.getInstance().addJvmShutdownCallback((JVMShutdownCallback) httpFacade);
         }
@@ -71,7 +71,7 @@ public class ExtFacade {
   static JsonFacade jsonFacade;
 
   private static void initJsonFacade() {
-    jsonFacadeImpl = AgentPackagePath.getAgentProperties().getProperty("jsonFacade.impl");
+    jsonFacadeImpl = AgentPackage.getAgentProperties().getProperty("jsonFacade.impl");
     jsonConfigFile = new File(ExtClassLoader.getExtJsonPath(), "json.properties");
     jsonConfigProperties = FileUtils.loadProperties(jsonConfigFile);
 
@@ -79,7 +79,7 @@ public class ExtFacade {
       try {
         Class<?> eslDefaultJsonImplClass = Class.forName(jsonFacadeImpl, true, extClassLoader);
         jsonFacade = (JsonFacade) eslDefaultJsonImplClass.getConstructor(Properties.class, Properties.class)
-                .newInstance(AgentPackagePath.getAgentProperties(), jsonConfigProperties);
+                .newInstance(AgentPackage.getAgentProperties(), jsonConfigProperties);
         if (jsonFacade instanceof JVMShutdownCallback) {
           JVMShutdown.getInstance().addJvmShutdownCallback((JVMShutdownCallback) jsonFacade);
         }
@@ -89,16 +89,16 @@ public class ExtFacade {
       }
     };
     runWithExtClassLoader(runnable);
-    receivePreparedSqlBoUrl = AgentPackagePath.getAgentProperties().getProperty("receivePreparedSqlBo.url");
-    receiveSqlBoUrl = AgentPackagePath.getAgentProperties().getProperty("receiveSqlBo.url");
-    receiveEslConnectionConfigUrl = AgentPackagePath.getAgentProperties().getProperty("receiveEslConnectionConfig.url");
+    receivePreparedSqlBoUrl = AgentPackage.getAgentProperties().getProperty("receivePreparedSqlBo.url");
+    receiveSqlBoUrl = AgentPackage.getAgentProperties().getProperty("receiveSqlBo.url");
+    receiveEslConnectionConfigUrl = AgentPackage.getAgentProperties().getProperty("receiveEslConnectionConfig.url");
   }
 
   static String logFacadeImpl;
   static File logConfigFile;
 
   private static void initLogFacade() {
-    logFacadeImpl = AgentPackagePath.getAgentProperties().getProperty("logFacade.impl");
+    logFacadeImpl = AgentPackage.getAgentProperties().getProperty("logFacade.impl");
     logConfigFile = new File(ExtClassLoader.getExtLogPath(), "log4j2.xml");
   }
 
@@ -107,7 +107,7 @@ public class ExtFacade {
       try {
         Class<?> eslDefaultLogImplClass = Class.forName(logFacadeImpl, true, extClassLoader);
         return (LogFacade) eslDefaultLogImplClass.getConstructor(Properties.class, File.class, String.class)
-                .newInstance(AgentPackagePath.getAgentProperties(), logConfigFile, name);
+                .newInstance(AgentPackage.getAgentProperties(), logConfigFile, name);
 
       } catch (InstantiationException | IllegalAccessException |
                InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
@@ -122,7 +122,7 @@ public class ExtFacade {
       try {
         Class<?> eslDefaultLogImplClass = Class.forName(logFacadeImpl, true, extClassLoader);
         return (LogFacade) eslDefaultLogImplClass.getConstructor(Properties.class, File.class, String.class, String.class)
-                .newInstance(AgentPackagePath.getAgentProperties(), logConfigFile, name, fqcn);
+                .newInstance(AgentPackage.getAgentProperties(), logConfigFile, name, fqcn);
 
       } catch (InstantiationException | IllegalAccessException |
                InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {

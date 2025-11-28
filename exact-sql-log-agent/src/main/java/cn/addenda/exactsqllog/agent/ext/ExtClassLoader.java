@@ -1,6 +1,6 @@
 package cn.addenda.exactsqllog.agent.ext;
 
-import cn.addenda.exactsqllog.agent.AgentPackagePath;
+import cn.addenda.exactsqllog.agent.AgentPackage;
 import cn.addenda.exactsqllog.agent.ExactSqlLogAgentBootstrapException;
 import lombok.Getter;
 
@@ -39,7 +39,7 @@ public class ExtClassLoader extends URLClassLoader {
   private static final File extJsonPath;
 
   static {
-    extPath = new File(AgentPackagePath.getPath(), "ext");
+    extPath = new File(AgentPackage.getPath(), "ext");
     extLogPath = new File(extPath, "log");
     extHttpPath = new File(extPath, "http");
     extJsonPath = new File(extPath, "json");

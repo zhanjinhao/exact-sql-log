@@ -45,7 +45,7 @@ public enum InstrumentDebuggingClass {
     synchronized (INSTANCE) {
       try {
         if (debuggingClassesRootPath == null) {
-          debuggingClassesRootPath = new File(AgentPackagePath.getPath(), "/debugging");
+          debuggingClassesRootPath = new File(AgentPackage.getPath(), "/debugging");
           if (!debuggingClassesRootPath.exists()) {
             debuggingClassesRootPath.mkdir();
           }

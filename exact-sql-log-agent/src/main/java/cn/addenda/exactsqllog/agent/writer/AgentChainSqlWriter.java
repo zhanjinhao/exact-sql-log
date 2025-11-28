@@ -1,6 +1,6 @@
 package cn.addenda.exactsqllog.agent.writer;
 
-import cn.addenda.exactsqllog.agent.AgentPackagePath;
+import cn.addenda.exactsqllog.agent.AgentPackage;
 import cn.addenda.exactsqllog.agent.ext.ExtFacade;
 import cn.addenda.exactsqllog.agent.system.AgentDefaultSystemLoggerFactory;
 import cn.addenda.exactsqllog.common.bo.Execution;
@@ -83,7 +83,7 @@ public class AgentChainSqlWriter implements SqlWriter {
 
   private List<SqlWriter> initSqlWriter() {
     List<SqlWriter> _sqlWriterList = new ArrayList<>();
-    Properties agentProperties = AgentPackagePath.getAgentProperties();
+    Properties agentProperties = AgentPackage.getAgentProperties();
     String sqlWriterImplClass = agentProperties.getProperty("sqlWriter.impl");
     if (sqlWriterImplClass == null || sqlWriterImplClass.isEmpty()) {
       return _sqlWriterList;

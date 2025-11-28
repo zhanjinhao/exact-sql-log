@@ -11,14 +11,12 @@ import java.net.URL;
 import java.util.Properties;
 
 /**
- * todo rename to AgentPackage
- *
  * AgentPackagePath is a flag and finder to locate the SkyWalking agent.jar. It gets the absolute path of the agent jar.
  * The path is the required metadata for agent core looking up the plugins and toolkit activations. If the lookup
  * mechanism fails, the agent will exit directly.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class AgentPackagePath {
+public class AgentPackage {
 
   private static File AGENT_PACKAGE_PATH;
   private static Properties AGENT_PROPERTIES;
@@ -40,7 +38,7 @@ public class AgentPackagePath {
   }
 
   private static synchronized File findPath() {
-    String classResourcePath = AgentPackagePath.class.getName().replaceAll("\\.", "/") + ".class";
+    String classResourcePath = AgentPackage.class.getName().replaceAll("\\.", "/") + ".class";
 
     URL resource = ClassLoader.getSystemClassLoader().getResource(classResourcePath);
     if (resource != null) {
@@ -81,7 +79,7 @@ public class AgentPackagePath {
     if (AGENT_PROPERTIES != null) {
       return new Properties(AGENT_PROPERTIES);
     }
-    AGENT_PROPERTIES = FileUtils.loadProperties(AgentPackagePath.getAgentConf());
+    AGENT_PROPERTIES = FileUtils.loadProperties(AgentPackage.getAgentConf());
     return new Properties(AGENT_PROPERTIES);
   }
 

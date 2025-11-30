@@ -9,7 +9,6 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>cn.addenda</groupId>
   <artifactId>exact-sql-log-agent</artifactId>
 
   <properties>
@@ -29,8 +28,9 @@
     <!-- esl-facade -->
     <dependency>
       <groupId>cn.addenda</groupId>
-      <artifactId>exact-sql-log-ext-facade</artifactId>
+      <artifactId>exact-sql-log-facade</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- esl-common -->
@@ -38,12 +38,7 @@
       <groupId>cn.addenda</groupId>
       <artifactId>exact-sql-log-common</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
+      <scope>provided</scope>
     </dependency>
 
     <!-- esl-proxy -->
@@ -55,6 +50,10 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>cn.addenda</groupId>
+          <artifactId>exact-sql-log-common</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

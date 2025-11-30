@@ -8,9 +8,9 @@ import cn.addenda.exactsqllog.common.bo.SqlBo;
 import cn.addenda.exactsqllog.common.config.EslConnectionConfig;
 import cn.addenda.exactsqllog.common.jvm.JVMShutdown;
 import cn.addenda.exactsqllog.common.jvm.JVMShutdownCallback;
-import cn.addenda.exactsqllog.ext.facade.HttpFacade;
-import cn.addenda.exactsqllog.ext.facade.JsonFacade;
-import cn.addenda.exactsqllog.ext.facade.LogFacade;
+import cn.addenda.exactsqllog.facade.HttpFacade;
+import cn.addenda.exactsqllog.facade.JsonFacade;
+import cn.addenda.exactsqllog.facade.LogFacade;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -58,7 +58,7 @@ public class ExtFacade {
         throw new ExactSqlLogAgentBootstrapException(String.format("Cannot init httpFacade: [%s].", httpFacadeImpl), e);
       }
     };
-    runWithExtClassLoader(runnable);
+    acceptWithExtClassLoader(runnable);
   }
 
   // ------------------------
@@ -88,7 +88,7 @@ public class ExtFacade {
         throw new ExactSqlLogAgentBootstrapException(String.format("Cannot init jsonFacade: [%s].", jsonFacadeImpl), e);
       }
     };
-    runWithExtClassLoader(runnable);
+    acceptWithExtClassLoader(runnable);
     receivePreparedSqlBoUrl = AgentPackage.getAgentProperties().getProperty("receivePreparedSqlBo.url");
     receiveSqlBoUrl = AgentPackage.getAgentProperties().getProperty("receiveSqlBo.url");
     receiveEslConnectionConfigUrl = AgentPackage.getAgentProperties().getProperty("receiveEslConnectionConfig.url");
@@ -132,26 +132,26 @@ public class ExtFacade {
     return applyWithExtClassLoader(runnable);
   }
 
-  private static void runWithExtClassLoader(Consumer<ClassLoader> consumer) {
+  private static void acceptWithExtClassLoader(Consumer<ClassLoader> consumer) {
     ExtClassLoader extClassLoader = ExtClassLoader.getInstance();
-    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-    Thread.currentThread().setContextClassLoader(extClassLoader);
-    try {
+//    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+//    Thread.currentThread().setContextClassLoader(extClassLoader);
+//    try {
       consumer.accept(extClassLoader);
-    } finally {
-      Thread.currentThread().setContextClassLoader(contextClassLoader);
-    }
+//    } finally {
+//      Thread.currentThread().setContextClassLoader(contextClassLoader);
+//    }
   }
 
   private static <T> T applyWithExtClassLoader(Function<ClassLoader, T> function) {
     ExtClassLoader extClassLoader = ExtClassLoader.getInstance();
-    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-    Thread.currentThread().setContextClassLoader(extClassLoader);
-    try {
+//    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+//    Thread.currentThread().setContextClassLoader(extClassLoader);
+//    try {
       return function.apply(extClassLoader);
-    } finally {
-      Thread.currentThread().setContextClassLoader(contextClassLoader);
-    }
+//    } finally {
+//      Thread.currentThread().setContextClassLoader(contextClassLoader);
+//    }
   }
 
   public static void sendPreparedSqlBo(PreparedSqlBo preparedSqlBo) {

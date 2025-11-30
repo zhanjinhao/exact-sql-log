@@ -5,13 +5,11 @@ import cn.addenda.exactsqllog.common.util.StringUtils;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author addenda
  * @since 2021/9/13
  */
-@Slf4j
 public class LocalDateStrKeyDeSerializer extends KeyDeserializer {
 
   @Override

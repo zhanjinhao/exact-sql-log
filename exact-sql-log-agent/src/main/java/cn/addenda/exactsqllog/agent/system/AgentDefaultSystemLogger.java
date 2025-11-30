@@ -1,7 +1,7 @@
 package cn.addenda.exactsqllog.agent.system;
 
 import cn.addenda.exactsqllog.agent.ext.ExtFacade;
-import cn.addenda.exactsqllog.ext.facade.LogFacade;
+import cn.addenda.exactsqllog.facade.LogFacade;
 import cn.addenda.exactsqllog.proxy.system.SystemLogger;
 
 public class AgentDefaultSystemLogger implements SystemLogger {

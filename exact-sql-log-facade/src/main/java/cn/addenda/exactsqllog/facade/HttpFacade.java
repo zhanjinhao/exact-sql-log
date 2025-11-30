@@ -1,4 +1,4 @@
-package cn.addenda.exactsqllog.ext.facade;
+package cn.addenda.exactsqllog.facade;
 
 public interface HttpFacade {
 

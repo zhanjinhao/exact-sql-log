@@ -9,7 +9,6 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>cn.addenda</groupId>
   <artifactId>exact-sql-log-common</artifactId>
 
   <properties>
@@ -23,6 +22,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+      <scope>test</scope>
     </dependency>
     <!-- Log4j2 适配到 slf4j -->
     <dependency>
@@ -92,6 +92,48 @@
             <goals>
               <goal>jar</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <!--在clean阶段删除dist目录-->
+          <execution>
+            <id>clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <echo message="Base dir: ${project.basedir}"/>
+                <delete dir="${project.basedir}/../dist/boot/common"/>
+              </target>
+            </configuration>
+          </execution>
+          <!--在package阶段创建dist及相关目录-->
+          <execution>
+            <id>package</id>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <echo message="project.basedir: ${project.basedir}"/>
+                <echo message="project.build.directory: ${project.build.directory}"/>
+                <echo message="project.artifactId: ${project.artifactId}"/>
+                <echo message="project.build.finalName: ${project.build.finalName}"/>
+                <!-- 创建common目录 -->
+                <mkdir dir="${project.basedir}/../dist/boot/common"/>
+                <!-- common.jar至目标目录 -->
+                <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                      tofile="${project.basedir}/../dist/boot/common/${project.build.finalName}.jar"/>
+              </target>
+            </configuration>
           </execution>
         </executions>
       </plugin>

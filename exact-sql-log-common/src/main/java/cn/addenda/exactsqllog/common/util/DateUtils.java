@@ -2,7 +2,6 @@ package cn.addenda.exactsqllog.common.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -14,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author addenda
  * @since 2022/2/7 12:37
  */
-@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DateUtils {
 
@@ -27,21 +25,8 @@ public class DateUtils {
   public static final String Hm_FORMATTER = "HH:mm";
   private static final Map<String, DateTimeFormatter> FORMATTER_MAP = new ConcurrentHashMap<>();
 
-  private static ZoneId defaultZoneId;
-
-  static {
-    String property = System.getProperty("base.component.timezone");
-    if (property == null || property.isEmpty()) {
-      defaultZoneId = ZoneId.systemDefault();
-    } else {
-      try {
-        defaultZoneId = ZoneId.of(property);
-      } catch (Exception e) {
-        defaultZoneId = ZoneId.systemDefault();
-        log.error("使用参数[{}]初始化[{}]出错，使用系统时区[{}]。", property, "defaultZoneId", defaultZoneId);
-      }
-    }
-  }
+  // 这个可以从配置文件读，暂时没必要。。。
+  private static ZoneId defaultZoneId = ZoneId.systemDefault();
 
   public static LocalDateTime dateToLocalDateTime(Date date) {
     return dateToLocalDateTime(date, defaultZoneId);

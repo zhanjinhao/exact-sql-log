@@ -9,14 +9,12 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>cn.addenda</groupId>
   <artifactId>exact-sql-log-ext</artifactId>
   <packaging>pom</packaging>
   <modules>
     <module>exact-sql-log-ext-log</module>
     <module>exact-sql-log-ext-json</module>
     <module>exact-sql-log-ext-http</module>
-    <module>exact-sql-log-ext-facade</module>
   </modules>
 
   <properties>

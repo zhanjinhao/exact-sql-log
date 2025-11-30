@@ -1,19 +1,16 @@
 package cn.addenda.exactsqllog.agent.ext;
 
 import cn.addenda.exactsqllog.agent.AgentPackage;
-import cn.addenda.exactsqllog.agent.ExactSqlLogAgentBootstrapException;
 import lombok.Getter;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ExtClassLoader extends URLClassLoader {
 
@@ -60,30 +57,14 @@ public class ExtClassLoader extends URLClassLoader {
     List<File> extLibPathList = Arrays.asList(extLogPath, extHttpPath, extJsonPath);
     List<URL> urlList = new ArrayList<>();
     for (File extLibPath : extLibPathList) {
-      urlList.addAll(Arrays.stream(ExtClassLoader.findJarUrls(extLibPath)).collect(Collectors.toList()));
+      for (URL jarUrl : AgentPackage.findJarUrls(extLibPath)) {
+        urlList.add(jarUrl);
+      }
     }
     // 添加扩展jar文件
     for (URL url : urlList) {
       addURL(url);
     }
-  }
-
-  protected static URL[] findJarUrls(File extLibDir) {
-    List<URL> urls = new ArrayList<>();
-    if (extLibDir.exists() && extLibDir.isDirectory()) {
-      File[] jars = extLibDir.listFiles((dir, name) -> name.endsWith(".jar"));
-
-      if (jars != null) {
-        for (File jar : jars) {
-          try {
-            urls.add(jar.toURI().toURL());
-          } catch (MalformedURLException e) {
-            throw new ExactSqlLogAgentBootstrapException(String.format("Cannot get url of jar: [%s].", jar.getAbsolutePath()), e);
-          }
-        }
-      }
-    }
-    return urls.toArray(new URL[0]);
   }
 
   @Override
@@ -138,7 +119,7 @@ public class ExtClassLoader extends URLClassLoader {
 
   public static synchronized void initInstance() {
     if (instance == null) {
-      ClassLoader parentClassLoader = ClassLoader.getSystemClassLoader();
+      ClassLoader parentClassLoader = ClassLoader.getSystemClassLoader().getParent();
       instance = new ExtClassLoader(parentClassLoader);
     }
   }

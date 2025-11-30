@@ -5,40 +5,17 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>cn.addenda</groupId>
-    <artifactId>exact-sql-log-ext</artifactId>
+    <artifactId>exact-sql-log</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>exact-sql-log-ext-http</artifactId>
-
-  <packaging>jar</packaging>
+  <artifactId>exact-sql-log-facade</artifactId>
 
   <properties>
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-
-  <dependencies>
-    <!-- esl-facade -->
-    <dependency>
-      <groupId>cn.addenda</groupId>
-      <artifactId>exact-sql-log-facade</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <!-- esl-common -->
-    <dependency>
-      <groupId>cn.addenda</groupId>
-      <artifactId>exact-sql-log-common</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <!-- httpclient5 -->
-    <dependency>
-      <groupId>org.apache.httpcomponents.client5</groupId>
-      <artifactId>httpclient5</artifactId>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
 
   <build>
     <resources>
@@ -81,27 +58,6 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.3.0</version>
-        <executions>
-          <execution>
-            <id>copy-http-dependencies</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.basedir}/../../dist/ext/http</outputDirectory>
-              <includeArtifactIds>
-                httpcore5,httpcore5-h2,httpclient5
-              </includeArtifactIds>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>3.1.0</version>
         <executions>
@@ -115,7 +71,7 @@
             <configuration>
               <target>
                 <echo message="Base dir: ${project.basedir}"/>
-                <delete dir="${project.basedir}/../../dist/ext/http"/>
+                <delete dir="${project.basedir}/../dist/boot/facade"/>
               </target>
             </configuration>
           </execution>
@@ -132,17 +88,11 @@
                 <echo message="project.build.directory: ${project.build.directory}"/>
                 <echo message="project.artifactId: ${project.artifactId}"/>
                 <echo message="project.build.finalName: ${project.build.finalName}"/>
-                <mkdir dir="${project.basedir}/../../dist"/>
-                <!-- 创建外部目录 -->
-                <mkdir dir="${project.basedir}/../../dist/ext"/>
-                <!-- 创建http外部目录 -->
-                <mkdir dir="${project.basedir}/../../dist/ext/http"/>
-                <!-- 拷贝agent.jar至目标目录 -->
+                <!-- 创建facade目录 -->
+                <mkdir dir="${project.basedir}/../dist/boot/facade"/>
+                <!-- 拷贝facade.jar至目标目录 -->
                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
-                      tofile="${project.basedir}/../../dist/ext/http/${project.build.finalName}.jar"/>
-                <!-- 拷贝http配置文件至目标目录 -->
-                <copy file="${project.basedir}/src/main/resources/http.properties"
-                      tofile="${project.basedir}/../../dist/ext/http/http.properties"/>
+                      tofile="${project.basedir}/../dist/boot/facade/${project.build.finalName}.jar"/>
               </target>
             </configuration>
           </execution>

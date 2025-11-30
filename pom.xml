@@ -14,6 +14,7 @@
     <module>exact-sql-log-common</module>
     <module>exact-sql-log-ext</module>
     <module>exact-sql-log-server</module>
+    <module>exact-sql-log-facade</module>
   </modules>
 
   <properties>

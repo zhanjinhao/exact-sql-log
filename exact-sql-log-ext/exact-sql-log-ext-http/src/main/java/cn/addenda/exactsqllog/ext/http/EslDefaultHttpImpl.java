@@ -1,8 +1,7 @@
 package cn.addenda.exactsqllog.ext.http;
 
 import cn.addenda.exactsqllog.common.jvm.JVMShutdownCallback;
-import cn.addenda.exactsqllog.ext.ExactSqlLogExtException;
-import cn.addenda.exactsqllog.ext.facade.HttpFacade;
+import cn.addenda.exactsqllog.facade.HttpFacade;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -78,7 +77,7 @@ public class EslDefaultHttpImpl implements HttpFacade, JVMShutdownCallback {
   }
 
   public void sendRequest(String uri, String jsonParam) {
-    ExactSqlLogExtException.runWithExactSqlLogExtException(
+    ExactSqlLogExtHttpException.runWithExactSqlLogExtException(
             () -> doSendRequest(uri, jsonParam)
     );
   }

@@ -3,7 +3,7 @@ package cn.addenda.exactsqllog.agent.writer;
 import cn.addenda.exactsqllog.agent.ext.ExtFacade;
 import cn.addenda.exactsqllog.common.bo.Execution;
 import cn.addenda.exactsqllog.common.config.EslConnectionConfig;
-import cn.addenda.exactsqllog.ext.facade.LogFacade;
+import cn.addenda.exactsqllog.facade.LogFacade;
 import cn.addenda.exactsqllog.proxy.writer.SqlWriter;
 
 public class AgentLogSqlWriter implements SqlWriter {

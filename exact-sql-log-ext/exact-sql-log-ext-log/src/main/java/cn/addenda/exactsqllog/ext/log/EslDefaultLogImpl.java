@@ -1,6 +1,6 @@
 package cn.addenda.exactsqllog.ext.log;
 
-import cn.addenda.exactsqllog.ext.facade.LogFacade;
+import cn.addenda.exactsqllog.facade.LogFacade;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;

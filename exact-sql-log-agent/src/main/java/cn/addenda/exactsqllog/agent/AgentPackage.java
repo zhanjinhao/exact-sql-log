@@ -8,10 +8,13 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 /**
- * AgentPackagePath is a flag and finder to locate the SkyWalking agent.jar. It gets the absolute path of the agent jar.
+ * AgentPackage is a flag and finder to locate the SkyWalking agent.jar. It gets the absolute path of the agent jar.
  * The path is the required metadata for agent core looking up the plugins and toolkit activations. If the lookup
  * mechanism fails, the agent will exit directly.
  */
@@ -81,6 +84,35 @@ public class AgentPackage {
     }
     AGENT_PROPERTIES = FileUtils.loadProperties(AgentPackage.getAgentConf());
     return new Properties(AGENT_PROPERTIES);
+  }
+
+  public static synchronized URL[] findJarUrls(File extLibDir) {
+    List<URL> urls = new ArrayList<>();
+    if (extLibDir.exists() && extLibDir.isDirectory()) {
+      File[] jars = extLibDir.listFiles((dir, name) -> name.endsWith(".jar"));
+
+      if (jars != null) {
+        for (File jar : jars) {
+          try {
+            urls.add(jar.toURI().toURL());
+          } catch (MalformedURLException e) {
+            throw new ExactSqlLogAgentBootstrapException(String.format("Cannot get url of jar: [%s].", jar.getAbsolutePath()), e);
+          }
+        }
+      }
+    }
+    return urls.toArray(new URL[0]);
+  }
+
+  public static synchronized File[] findJarFiles(File extLibDir) {
+    List<File> files = new ArrayList<>();
+    if (extLibDir.exists() && extLibDir.isDirectory()) {
+      File[] jars = extLibDir.listFiles((dir, name) -> name.endsWith(".jar"));
+      if (jars != null) {
+        files.addAll(Arrays.asList(jars));
+      }
+    }
+    return files.toArray(new File[0]);
   }
 
 }

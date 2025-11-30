@@ -17,7 +17,10 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.matcher.ElementMatchers;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.util.jar.JarFile;
 
 import static cn.addenda.exactsqllog.agent.transform.hostenv.servletcontextpath.springboot.SpringbootServletContextPathInterceptorPointDefine.SERVER_PROPERTIES_SERVLET_NAME;
 import static net.bytebuddy.matcher.ElementMatchers.nameContains;
@@ -25,9 +28,11 @@ import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 
 public class ExactSqlLogAgent {
 
-  private static final SystemLogger log = AgentDefaultSystemLoggerFactory.getInstance().getSystemLogger(ExactSqlLogAgent.class);
-
   public static void premain(String args, Instrumentation instrumentation) {
+
+    addBootLibToBootstrapClassLoaderSearch(instrumentation);
+
+    SystemLogger log = AgentDefaultSystemLoggerFactory.getInstance().getSystemLogger(ExactSqlLogAgent.class);
 
     log.info("ExactSqlLogAgent start enhancement, {}.class.classLoader = {}, args:{}",
             ExactSqlLogAgent.class.getName(), ExactSqlLogAgent.class.getClassLoader(), args);
@@ -68,6 +73,26 @@ public class ExactSqlLogAgent {
     interceptorPointDefineGather.addInterceptorPointDefine(new SpringbootServletContextPathInterceptorPointDefine());
     interceptorPointDefineGather.addInterceptorPointDefine(new EslStatementInterceptorPointDefine());
     return interceptorPointDefineGather;
+  }
+
+  private static void addBootLibToBootstrapClassLoaderSearch(Instrumentation instrumentation) {
+    File bootDir = new File(AgentPackage.getPath(), "boot");
+    File facadeDir = new File(bootDir, "facade");
+    File commonDir = new File(bootDir, "common");
+
+    addBootLibToBootstrapClassLoaderSearch(instrumentation, facadeDir);
+    addBootLibToBootstrapClassLoaderSearch(instrumentation, commonDir);
+  }
+
+  private static void addBootLibToBootstrapClassLoaderSearch(Instrumentation instrumentation, File dir) {
+    File[] bootLibs = AgentPackage.findJarFiles(dir);
+    for (File bootLib : bootLibs) {
+      try {
+        instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(bootLib));
+      } catch (IOException e) {
+        throw new ExactSqlLogAgentBootstrapException(String.format("cannot append %s to BootstrapClassLoaderSearch", bootLib.getAbsolutePath()), e);
+      }
+    }
   }
 
 }

@@ -1,7 +1,6 @@
 package cn.addenda.exactsqllog.ext.json;
 
-import cn.addenda.exactsqllog.ext.ExactSqlLogExtException;
-import cn.addenda.exactsqllog.ext.facade.JsonFacade;
+import cn.addenda.exactsqllog.facade.JsonFacade;
 
 import java.util.Properties;
 
@@ -17,14 +16,14 @@ public class EslDefaultJsonImpl implements JsonFacade {
 
   @Override
   public String toStr(Object input) {
-    return ExactSqlLogExtException.getWithExactSqlLogExtException(
+    return ExactSqlLogExtJsonException.getWithExactSqlLogExtException(
             () -> EslJsonUtils.toStr(input)
     );
   }
 
   @Override
   public <T> T toObj(String inputJson, Class<T> clazz) {
-    return ExactSqlLogExtException.getWithExactSqlLogExtException(
+    return ExactSqlLogExtJsonException.getWithExactSqlLogExtException(
             () -> EslJsonUtils.toObj(inputJson, clazz)
     );
   }

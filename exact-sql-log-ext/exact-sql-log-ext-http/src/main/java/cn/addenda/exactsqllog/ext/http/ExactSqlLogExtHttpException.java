@@ -1,25 +1,25 @@
-package cn.addenda.exactsqllog.ext;
+package cn.addenda.exactsqllog.ext.http;
 
 import cn.addenda.exactsqllog.common.exception.ExactSqlLogException;
 
-public class ExactSqlLogExtException extends ExactSqlLogException {
+public class ExactSqlLogExtHttpException extends ExactSqlLogException {
 
-  public ExactSqlLogExtException() {
+  public ExactSqlLogExtHttpException() {
   }
 
-  public ExactSqlLogExtException(String message) {
+  public ExactSqlLogExtHttpException(String message) {
     super(message);
   }
 
-  public ExactSqlLogExtException(String message, Throwable cause) {
+  public ExactSqlLogExtHttpException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public ExactSqlLogExtException(Throwable cause) {
+  public ExactSqlLogExtHttpException(Throwable cause) {
     super(cause);
   }
 
-  public ExactSqlLogExtException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+  public ExactSqlLogExtHttpException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
   }
 
@@ -27,7 +27,7 @@ public class ExactSqlLogExtException extends ExactSqlLogException {
     try {
       tRunnable.run();
     } catch (Throwable t) {
-      throw new ExactSqlLogExtException(t);
+      throw new ExactSqlLogExtHttpException(t);
     }
   }
 
@@ -35,7 +35,7 @@ public class ExactSqlLogExtException extends ExactSqlLogException {
     try {
       return tSupplier.get();
     } catch (Throwable t) {
-      throw new ExactSqlLogExtException(t);
+      throw new ExactSqlLogExtHttpException(t);
     }
   }
 

@@ -1,8 +1,8 @@
 package cn.addenda.exactsqllog.server.controller;
 
-import cn.addenda.component.base.jackson.util.JacksonUtils;
 import cn.addenda.exactsqllog.common.bo.PreparedSqlBo;
 import cn.addenda.exactsqllog.common.bo.SqlBo;
+import cn.addenda.exactsqllog.ext.json.EslJsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,12 +16,12 @@ public class ExecutionController {
 
   @PostMapping("receivePreparedSqlBo")
   public void receivePreparedSqlBo(@RequestBody PreparedSqlBo preparedSqlBo) {
-    log.info("{}", JacksonUtils.toStr(preparedSqlBo));
+    log.info("{}", EslJsonUtils.toStr(preparedSqlBo));
   }
 
   @PostMapping("receiveSqlBo")
   public void receiveSqlBo(@RequestBody SqlBo sqlBo) {
-    log.info("{}", JacksonUtils.toStr(sqlBo));
+    log.info("{}", EslJsonUtils.toStr(sqlBo));
   }
 
 }

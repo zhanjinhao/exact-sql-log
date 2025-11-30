@@ -33,7 +33,6 @@
     <hikari.version>3.4.5</hikari.version>
     <druid.version>1.2.8</druid.version>
     <spring-boot.version>2.6.5</spring-boot.version>
-    <component.version>2.0-SNAPSHOT</component.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
   </properties>
@@ -153,12 +152,6 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-log4j2</artifactId>
         <version>${spring-boot.version}</version>
-      </dependency>
-      <!-- 基础组件 -->
-      <dependency>
-        <groupId>cn.addenda</groupId>
-        <artifactId>base-component</artifactId>
-        <version>${component.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

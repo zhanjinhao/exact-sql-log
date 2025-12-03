@@ -1,16 +1,16 @@
 package cn.addenda.exactsqllog.agent.ext;
 
 import cn.addenda.exactsqllog.agent.AgentPackage;
+import cn.addenda.exactsqllog.agent.ExactSqlLogAgentBootstrapException;
+import cn.addenda.exactsqllog.agent.util.IOUtils;
+import cn.addenda.exactsqllog.common.util.ArrayUtils;
 import lombok.Getter;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 public class ExtClassLoader extends URLClassLoader {
 
@@ -70,10 +70,21 @@ public class ExtClassLoader extends URLClassLoader {
   @Override
   protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
     synchronized (getClassLoadingLock(name)) {
-      Class<?> loadedClass = null;
-      loadedClass = findLoadedClass(name);
+      Class<?> loadedClass = findLoadedClass(name);
       if (loadedClass != null) {
         return loadedClass;
+      }
+
+      if (ORG_SLF4J_IMPL_STATICLOGGERBINDER_CLASS_NAME.equals(name)) {
+        URL resources = findOrgSlf4jImplStaticLoggerBinder();
+        byte[] byteArray;
+        try {
+          byteArray = IOUtils.toByteArray(resources);
+        } catch (IOException e) {
+          throw new ExactSqlLogAgentBootstrapException(
+                  String.format("Error loading byte array from resources: %s.", resources), e);
+        }
+        return defineClass(name, byteArray, 0, byteArray.length);
       }
 
       boolean shouldIsolate = false;
@@ -124,12 +135,59 @@ public class ExtClassLoader extends URLClassLoader {
     }
   }
 
+  private static final String ORG_SLF4J_IMPL_STATICLOGGERBINDER_CLASS_NAME = "org.slf4j.impl.StaticLoggerBinder";
+  private static final String ORG_SLF4J_IMPL_STATICLOGGERBINDER_RESOURCES_NAME = "org/slf4j/impl/StaticLoggerBinder.class";
+
   @Override
   public Enumeration<URL> getResources(String name) throws IOException {
-    if ("org/slf4j/impl/StaticLoggerBinder.class".equals(name)) {
-      return findResources(name);
+    if (ORG_SLF4J_IMPL_STATICLOGGERBINDER_RESOURCES_NAME.equals(name)) {
+      Iterator<URL> iterator = ArrayUtils.asArrayList(findOrgSlf4jImplStaticLoggerBinder()).iterator();
+      return new Enumeration<URL>() {
+        @Override
+        public boolean hasMoreElements() {
+          return iterator.hasNext();
+        }
+
+        @Override
+        public URL nextElement() {
+          return iterator.next();
+        }
+      };
     }
     return super.getResources(name);
+  }
+
+  @Override
+  public URL getResource(String name) {
+    if (ORG_SLF4J_IMPL_STATICLOGGERBINDER_RESOURCES_NAME.equals(name)) {
+      return findOrgSlf4jImplStaticLoggerBinder();
+    }
+    return super.getResource(name);
+  }
+
+  private URL findOrgSlf4jImplStaticLoggerBinder() {
+    Enumeration<URL> resources;
+    try {
+      resources = findResources(ORG_SLF4J_IMPL_STATICLOGGERBINDER_RESOURCES_NAME);
+    } catch (IOException e) {
+      throw new ExactSqlLogAgentBootstrapException(
+              String.format("Error loading '%s'.", ORG_SLF4J_IMPL_STATICLOGGERBINDER_RESOURCES_NAME), e);
+    }
+
+    List<URL> urlList = new ArrayList<>();
+    while (resources.hasMoreElements()) {
+      URL url = resources.nextElement();
+      if (url.toString().contains("exact-sql-log-ext-log")) {
+        urlList.add(url);
+      }
+    }
+
+    if (urlList.size() != 1) {
+      throw new ExactSqlLogAgentBootstrapException(
+              String.format("Error loading '%s'.", ORG_SLF4J_IMPL_STATICLOGGERBINDER_RESOURCES_NAME));
+    }
+
+    return urlList.get(0);
   }
 
 }

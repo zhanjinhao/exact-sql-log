@@ -1,7 +1,7 @@
 package cn.addenda.exactsqllog.agent.ext;
 
 import cn.addenda.exactsqllog.agent.AgentPackage;
-import cn.addenda.exactsqllog.agent.ExactSqlLogAgentBootstrapException;
+import cn.addenda.exactsqllog.agent.ExactSqlLogAgentStartException;
 import cn.addenda.exactsqllog.agent.util.IOUtils;
 import cn.addenda.exactsqllog.common.util.ArrayUtils;
 import lombok.Getter;
@@ -76,13 +76,13 @@ public class ExtClassLoader extends URLClassLoader {
       }
 
       if (ORG_SLF4J_IMPL_STATICLOGGERBINDER_CLASS_NAME.equals(name)) {
-        URL resources = findOrgSlf4jImplStaticLoggerBinder();
+        URL resource = findOrgSlf4jImplStaticLoggerBinder();
         byte[] byteArray;
         try {
-          byteArray = IOUtils.toByteArray(resources);
+          byteArray = IOUtils.toByteArray(resource);
         } catch (IOException e) {
-          throw new ExactSqlLogAgentBootstrapException(
-                  String.format("Error loading byte array from resources: %s.", resources), e);
+          throw new ExactSqlLogAgentStartException(
+                  String.format("Error loading byte array from resource: %s.", resource), e);
         }
         return defineClass(name, byteArray, 0, byteArray.length);
       }
@@ -170,7 +170,7 @@ public class ExtClassLoader extends URLClassLoader {
     try {
       resources = findResources(ORG_SLF4J_IMPL_STATICLOGGERBINDER_RESOURCES_NAME);
     } catch (IOException e) {
-      throw new ExactSqlLogAgentBootstrapException(
+      throw new ExactSqlLogAgentStartException(
               String.format("Error loading '%s'.", ORG_SLF4J_IMPL_STATICLOGGERBINDER_RESOURCES_NAME), e);
     }
 
@@ -183,8 +183,8 @@ public class ExtClassLoader extends URLClassLoader {
     }
 
     if (urlList.size() != 1) {
-      throw new ExactSqlLogAgentBootstrapException(
-              String.format("Error loading '%s'.", ORG_SLF4J_IMPL_STATICLOGGERBINDER_RESOURCES_NAME));
+      throw new ExactSqlLogAgentStartException(
+              String.format("Only one '%s' is required.", ORG_SLF4J_IMPL_STATICLOGGERBINDER_RESOURCES_NAME));
     }
 
     return urlList.get(0);

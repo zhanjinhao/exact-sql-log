@@ -1,6 +1,6 @@
 package cn.addenda.exactsqllog.agent.transform.match;
 
-import cn.addenda.exactsqllog.agent.ExactSqlLogAgentBootstrapException;
+import cn.addenda.exactsqllog.agent.ExactSqlLogAgentStartException;
 import cn.addenda.exactsqllog.common.util.ArrayUtils;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -20,7 +20,7 @@ public class MultiClassNameMatch implements IndirectMatch {
 
   public MultiClassNameMatch(String[] classNames) {
     if (classNames == null || classNames.length == 0) {
-      throw new ExactSqlLogAgentBootstrapException("classNames should has 1 element at least");
+      throw new ExactSqlLogAgentStartException("classNames should has 1 element at least");
     } else {
       this.classNameList = ArrayUtils.asArrayList(classNames);
     }

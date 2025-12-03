@@ -1,7 +1,7 @@
 package cn.addenda.exactsqllog.agent.util;
 
 import cn.addenda.exactsqllog.agent.AgentPackage;
-import cn.addenda.exactsqllog.agent.ExactSqlLogAgentBootstrapException;
+import cn.addenda.exactsqllog.agent.ExactSqlLogAgentStartException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -20,7 +20,8 @@ public class FileUtils {
     try (InputStream inputStream = file.toURI().toURL().openStream()) {
       p.load(inputStream);
     } catch (Exception e) {
-      throw new ExactSqlLogAgentBootstrapException(String.format("loadProperties error: [%s].", file.getAbsolutePath()), e);
+      throw new ExactSqlLogAgentStartException(
+              String.format("loadProperties error: [%s].", file.getAbsolutePath()), e);
     }
 
     Properties p2 = new Properties();

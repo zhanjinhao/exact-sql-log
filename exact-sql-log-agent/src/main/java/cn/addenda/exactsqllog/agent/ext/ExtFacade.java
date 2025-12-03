@@ -1,7 +1,7 @@
 package cn.addenda.exactsqllog.agent.ext;
 
 import cn.addenda.exactsqllog.agent.AgentPackage;
-import cn.addenda.exactsqllog.agent.ExactSqlLogAgentBootstrapException;
+import cn.addenda.exactsqllog.agent.ExactSqlLogAgentStartException;
 import cn.addenda.exactsqllog.agent.util.FileUtils;
 import cn.addenda.exactsqllog.common.bo.PreparedSqlBo;
 import cn.addenda.exactsqllog.common.bo.SqlBo;
@@ -53,7 +53,7 @@ public class ExtFacade {
         }
       } catch (InstantiationException | IllegalAccessException |
                InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
-        throw new ExactSqlLogAgentBootstrapException(
+        throw new ExactSqlLogAgentStartException(
                 String.format("Cannot init httpFacade: [%s].", httpFacadeImpl), e);
       }
     };
@@ -94,7 +94,7 @@ public class ExtFacade {
         }
       } catch (ClassNotFoundException | InvocationTargetException |
                InstantiationException | IllegalAccessException | NoSuchMethodException e) {
-        throw new ExactSqlLogAgentBootstrapException(
+        throw new ExactSqlLogAgentStartException(
                 String.format("Cannot init jsonFacade: [%s].", jsonFacadeImpl), e);
       }
     };
@@ -132,7 +132,7 @@ public class ExtFacade {
 
       } catch (InstantiationException | IllegalAccessException |
                InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
-        throw new ExactSqlLogAgentBootstrapException(
+        throw new ExactSqlLogAgentStartException(
                 String.format("Cannot create logFacade: [%s].", logFacadeImpl), e);
       }
     };
@@ -149,7 +149,7 @@ public class ExtFacade {
 
       } catch (InstantiationException | IllegalAccessException |
                InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
-        throw new ExactSqlLogAgentBootstrapException(
+        throw new ExactSqlLogAgentStartException(
                 String.format("Cannot create logFacade: [%s].", logFacadeImpl), e);
       }
     };
@@ -223,7 +223,8 @@ public class ExtFacade {
     try {
       awareClass = classLoader.loadClass(awareName);
     } catch (ClassNotFoundException e) {
-      throw new ExactSqlLogAgentBootstrapException(String.format("Error loading awareClass, awareName: %s.", awareName), e);
+      throw new ExactSqlLogAgentStartException(
+              String.format("Error loading awareClass, awareName: %s.", awareName), e);
     }
     Method[] declaredMethods = awareClass.getDeclaredMethods();
     for (Method declaredMethod : declaredMethods) {
@@ -246,7 +247,7 @@ public class ExtFacade {
       ExtPropertiesAware extPropertiesAware = declaredMethod.getAnnotation(ExtPropertiesAware.class);
       if (extPropertiesAware != null) {
         if (agentPropertiesAware != null) {
-          throw new ExactSqlLogAgentBootstrapException(
+          throw new ExactSqlLogAgentStartException(
                   String.format("@AgentPropertiesAware and @ExtPropertiesAware can not annotate the same method: %s.", declaredMethod));
         }
 
@@ -263,7 +264,7 @@ public class ExtFacade {
             customProperties = jsonConfigProperties;
             break;
           default:
-            throw new ExactSqlLogAgentBootstrapException(
+            throw new ExactSqlLogAgentStartException(
                     String.format("Unsupported facade type: %s, awareClass: %s, awareMethod: %s.", facadeType, awareClass, declaredMethod));
         }
         invokeAwareMethod(declaredMethod, customProperties, awareClass);
@@ -275,18 +276,21 @@ public class ExtFacade {
     try {
       method.invoke(null, properties);
     } catch (IllegalAccessException | InvocationTargetException e) {
-      throw new ExactSqlLogAgentBootstrapException(
+      throw new ExactSqlLogAgentStartException(
               String.format("invoke aware method error, awareClass: %s, awareMethod: %s.", awareClass, method), e);
     }
   }
+
+  private static final String AWARE_CONF_RESOURCE = "META-INF/esl.ext.conf.aware";
 
   private static List<String> getAwareNameList(ClassLoader classLoader) {
     List<String> nameList = new ArrayList<>();
     Enumeration<URL> resources;
     try {
-      resources = classLoader.getResources("META-INF/esl.ext.conf.aware");
+      resources = classLoader.getResources(AWARE_CONF_RESOURCE);
     } catch (IOException e) {
-      throw new ExactSqlLogAgentBootstrapException("Error getting resources from 'META-INF/esl.ext.conf.aware'.", e);
+      throw new ExactSqlLogAgentStartException(
+              String.format("Error getting resources from '%s'.", AWARE_CONF_RESOURCE), e);
     }
     while (resources.hasMoreElements()) {
       URL url = resources.nextElement();
@@ -300,14 +304,14 @@ public class ExtFacade {
           nameList.add(s);
         }
       } catch (IOException x) {
-        throw new ExactSqlLogAgentBootstrapException(
+        throw new ExactSqlLogAgentStartException(
                 String.format("Error reading configuration file, url: %s.", url.getPath()), x);
       } finally {
         try {
           if (bufferedReader != null) bufferedReader.close();
           if (inputStream != null) inputStream.close();
         } catch (IOException y) {
-          throw new ExactSqlLogAgentBootstrapException(
+          throw new ExactSqlLogAgentStartException(
                   String.format("Error closing configuration file, url: %s.", url.getPath()), y);
         }
       }

@@ -1,8 +1,6 @@
 package cn.addenda.exactsqllog.agent;
 
-import cn.addenda.exactsqllog.common.exception.ExactSqlLogException;
-
-public class ExactSqlLogAgentBootstrapException extends ExactSqlLogException {
+public class ExactSqlLogAgentBootstrapException extends RuntimeException {
 
   public ExactSqlLogAgentBootstrapException() {
   }

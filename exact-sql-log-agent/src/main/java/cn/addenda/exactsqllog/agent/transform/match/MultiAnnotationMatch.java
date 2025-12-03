@@ -1,6 +1,6 @@
 package cn.addenda.exactsqllog.agent.transform.match;
 
-import cn.addenda.exactsqllog.agent.ExactSqlLogAgentBootstrapException;
+import cn.addenda.exactsqllog.agent.ExactSqlLogAgentStartException;
 import cn.addenda.exactsqllog.common.util.ArrayUtils;
 import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.description.annotation.AnnotationList;
@@ -22,7 +22,7 @@ public class MultiAnnotationMatch implements IndirectMatch {
 
   public MultiAnnotationMatch(String[] annotations) {
     if (annotations == null || annotations.length == 0) {
-      throw new ExactSqlLogAgentBootstrapException("annotations should has 1 element at least");
+      throw new ExactSqlLogAgentStartException("annotations should has 1 element at least");
     } else {
       this.annotationList = ArrayUtils.asArrayList(annotations);
     }

@@ -22,17 +22,12 @@ import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 
 import java.io.IOException;
-import java.util.Properties;
 
 public class EslDefaultHttpImpl implements HttpFacade, JVMShutdownCallback {
 
-  private final Properties agentProperties;
-  private final Properties httpProperties;
   private final CloseableHttpClient closeableHttpClient;
 
-  public EslDefaultHttpImpl(Properties agentProperties, Properties httpProperties) {
-    this.agentProperties = agentProperties;
-    this.httpProperties = httpProperties;
+  public EslDefaultHttpImpl() {
     this.closeableHttpClient = createHttpClient();
   }
 
@@ -73,7 +68,7 @@ public class EslDefaultHttpImpl implements HttpFacade, JVMShutdownCallback {
   }
 
   private Integer getHttpPropertyInteger(String propertyName) {
-    return Integer.parseInt(httpProperties.getProperty(propertyName));
+    return Integer.parseInt(HttpConfigAware.getHttpProperties().getProperty(propertyName));
   }
 
   public void sendRequest(String uri, String jsonParam) {

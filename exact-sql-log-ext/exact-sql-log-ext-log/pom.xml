@@ -23,6 +23,7 @@
       <groupId>cn.addenda</groupId>
       <artifactId>exact-sql-log-facade</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <!-- Slf4j -->
     <dependency>
@@ -154,6 +155,8 @@
                 <!-- 拷贝log配置文件至目标目录 -->
                 <copy file="${project.basedir}/src/main/resources/log4j2.xml"
                       tofile="${project.basedir}/../../dist/ext/log/log4j2.xml"/>
+                <copy file="${project.basedir}/src/main/resources/log.properties"
+                      tofile="${project.basedir}/../../dist/ext/log/log.properties"/>
               </target>
             </configuration>
           </execution>

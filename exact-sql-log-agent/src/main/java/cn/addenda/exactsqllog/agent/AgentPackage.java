@@ -80,10 +80,16 @@ public class AgentPackage {
 
   public static synchronized Properties getAgentProperties() {
     if (AGENT_PROPERTIES != null) {
-      return new Properties(AGENT_PROPERTIES);
+      return copyProperty(AGENT_PROPERTIES);
     }
     AGENT_PROPERTIES = FileUtils.loadProperties(AgentPackage.getAgentConf());
-    return new Properties(AGENT_PROPERTIES);
+    return copyProperty(AGENT_PROPERTIES);
+  }
+
+  private static Properties copyProperty(Properties properties) {
+    Properties n = new Properties();
+    n.putAll(properties);
+    return n;
   }
 
   public static synchronized URL[] findJarUrls(File extLibDir) {

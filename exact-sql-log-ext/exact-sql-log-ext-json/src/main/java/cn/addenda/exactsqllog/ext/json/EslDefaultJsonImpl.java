@@ -2,16 +2,9 @@ package cn.addenda.exactsqllog.ext.json;
 
 import cn.addenda.exactsqllog.facade.JsonFacade;
 
-import java.util.Properties;
-
 public class EslDefaultJsonImpl implements JsonFacade {
 
-  private final Properties agentProperties;
-  private final Properties httpProperties;
-
-  public EslDefaultJsonImpl(Properties agentProperties, Properties httpProperties) {
-    this.agentProperties = agentProperties;
-    this.httpProperties = httpProperties;
+  public EslDefaultJsonImpl() {
   }
 
   @Override

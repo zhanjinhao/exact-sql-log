@@ -10,22 +10,20 @@ import java.util.Properties;
 
 public class EslDefaultLogImpl implements LogFacade {
 
-  private final Properties agentProperties;
-  private final File confFile;
   private final String name;
   private final String fqcn;
   private final Logger logger;
 
-  public EslDefaultLogImpl(Properties agentProperties, File confFile, String name, String fqcn) {
-    this.agentProperties = agentProperties;
-    this.confFile = confFile;
+  public EslDefaultLogImpl(String name, String fqcn) {
     this.name = name;
     this.fqcn = fqcn;
-    this.logger = LoggerContext.getContext(null, false, confFile.toURI()).getLogger(name);
+    Properties logProperties = LogConfigAware.getLogProperties();
+    String absolutePath = logProperties.getProperty("log4j2.conf.absolutePath");
+    this.logger = LoggerContext.getContext(null, false, new File(absolutePath).toURI()).getLogger(name);
   }
 
-  public EslDefaultLogImpl(Properties agentProperties, File confFile, String name) {
-    this(agentProperties, confFile, name, EslDefaultLogImpl.class.getName());
+  public EslDefaultLogImpl(String name) {
+    this(name, EslDefaultLogImpl.class.getName());
   }
 
   @Override

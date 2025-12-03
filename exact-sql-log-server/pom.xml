@@ -24,6 +24,7 @@
       <artifactId>exact-sql-log-common</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- esl-ext-json -->
     <dependency>
       <groupId>cn.addenda</groupId>
       <artifactId>exact-sql-log-ext-json</artifactId>

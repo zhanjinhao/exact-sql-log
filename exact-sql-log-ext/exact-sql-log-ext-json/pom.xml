@@ -24,12 +24,14 @@
       <groupId>cn.addenda</groupId>
       <artifactId>exact-sql-log-facade</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <!-- esl-common -->
     <dependency>
       <groupId>cn.addenda</groupId>
       <artifactId>exact-sql-log-common</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <!--jackson-->
     <dependency>

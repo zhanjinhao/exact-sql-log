@@ -35,7 +35,7 @@ public class AgentChainSqlWriter implements SqlWriter {
             public void accept(SqlWriter sqlWriter, Execution execution) {
               sqlWriter.logCommit(execution);
             }
-          }, 10000);
+          }, 10000, false);
 
   private final TaskConsumer<Execution> logRollbackTaskConsumer =
           new TaskConsumer<>(new NamedBiConsumer<SqlWriter, Execution>() {
@@ -48,7 +48,7 @@ public class AgentChainSqlWriter implements SqlWriter {
             public void accept(SqlWriter sqlWriter, Execution execution) {
               sqlWriter.logRollback(execution);
             }
-          }, 10000);
+          }, 10000, false);
 
   private final TaskConsumer<Execution> logQueryTaskConsumer =
           new TaskConsumer<>(new NamedBiConsumer<SqlWriter, Execution>() {
@@ -61,7 +61,7 @@ public class AgentChainSqlWriter implements SqlWriter {
             public void accept(SqlWriter sqlWriter, Execution execution) {
               sqlWriter.logQuery(execution);
             }
-          }, 10000);
+          }, 10000, false);
 
   private final TaskConsumer<EslConnectionConfig> logEslConnectionConfigTaskConsumer =
           new TaskConsumer<>(new NamedBiConsumer<SqlWriter, EslConnectionConfig>() {
@@ -74,7 +74,7 @@ public class AgentChainSqlWriter implements SqlWriter {
             public void accept(SqlWriter sqlWriter, EslConnectionConfig eslConnectionConfig) {
               sqlWriter.logEslConnectionConfig(eslConnectionConfig);
             }
-          }, 1000);
+          }, 1000, true);
 
   public AgentChainSqlWriter() {
     sqlWriterList = initSqlWriter();
@@ -138,8 +138,9 @@ public class AgentChainSqlWriter implements SqlWriter {
     private final LinkedBlockingQueue<T> taskQueue;
     private final Thread taskConsumerThread;
     private volatile boolean ifRunning = false;
+    private final boolean canRetry;
 
-    public TaskConsumer(NamedBiConsumer<SqlWriter, T> biConsumer, int queueSize) {
+    public TaskConsumer(NamedBiConsumer<SqlWriter, T> biConsumer, int queueSize, boolean canRetry) {
       this.biConsumer = biConsumer;
       this.taskQueue = new LinkedBlockingQueue<>(queueSize);
       this.taskConsumerThread = new Thread(this::run);
@@ -147,6 +148,7 @@ public class AgentChainSqlWriter implements SqlWriter {
       this.taskConsumerThread.setName("AgentChainSqlWriter-taskConsumer-" + biConsumer.getName() + "-Thread");
       this.taskConsumerThread.start();
       this.ifRunning = true;
+      this.canRetry = canRetry;
     }
 
     public void offer(T task) {
@@ -166,7 +168,7 @@ public class AgentChainSqlWriter implements SqlWriter {
         T take = null;
         try {
           take = taskQueue.take();
-          doAccept(take);
+          doAccept(take, canRetry);
         } catch (InterruptedException e) {
           log.debug("{}关闭", taskConsumerThread.getName());
           Thread.currentThread().interrupt();
@@ -195,23 +197,58 @@ public class AgentChainSqlWriter implements SqlWriter {
       if (array.length > 0) {
         log.error("[{}]已关闭, 还有[{}]个task未被执行。", biConsumer.getName(), array.length);
         for (Object task : array) {
-          doAccept((T) task);
+          doAccept((T) task, false);
         }
       } else {
         log.info("[{}]已关闭, 所有task都执行完成。", biConsumer.getName(), array.length);
       }
     }
 
-    private void doAccept(T task) {
+    private void doAccept(T task, boolean canRetry) {
       for (SqlWriter sqlWriter : sqlWriterList) {
         try {
-          biConsumer.accept(sqlWriter, task);
+          if (canRetry) {
+            retrySend(() -> biConsumer.accept(sqlWriter, task));
+          } else {
+            biConsumer.accept(sqlWriter, task);
+          }
         } catch (Throwable t) {
           log.error("[{}] {} error. Task is [{}].",
                   sqlWriter, biConsumer.getName(), ExtFacade.toStr(task), t);
         }
       }
     }
+
+    private void retrySend(Runnable sendAction) {
+      int maxRetries = 100;
+      int retryCount = 0;
+
+      while (true) {
+        try {
+          sendAction.run();
+          // 成功则返回
+          return;
+        } catch (Exception e) {
+          retryCount++;
+          if (retryCount > maxRetries) {
+            // 达到最大重试次数，记录错误并退出
+            log.error("发送失败，已达到最大重试次数: {}", maxRetries, e);
+            return;
+          } else {
+            log.error("发送失败，最大重试次数: {}，当前重试次数：{}", maxRetries, retryCount, e);
+          }
+
+          try {
+            // 间隔3秒
+            Thread.sleep(3000);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            return;
+          }
+        }
+      }
+    }
+
   }
 
   private interface NamedBiConsumer<T, U> extends BiConsumer<T, U> {
